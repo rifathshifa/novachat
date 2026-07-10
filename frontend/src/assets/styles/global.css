@@ -1,0 +1,483 @@
+/* ============================================================
+   NovaChat — global.css
+   The single source of truth for all CSS variables and
+   shared utility classes consumed by React components.
+   Imports Google Fonts. Premium purple light theme.
+   ============================================================ */
+
+/* Google Fonts — loads when online, falls back to system fonts when offline */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap');
+
+/* ── System Font Fallbacks (offline safe) ── */
+@font-face {
+  font-family: 'Poppins';
+  src: local('Poppins'), local('Segoe UI Semibold'), local('Arial');
+  font-weight: 400 800;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Inter';
+  src: local('Inter'), local('Segoe UI'), local('Helvetica Neue'), local('Arial');
+  font-weight: 300 600;
+  font-display: swap;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   CSS VARIABLES
+───────────────────────────────────────────────────────────── */
+:root {
+  /* ── Brand Colors ── */
+  --primary:           #7C6EE6;
+  --primary-dark:      #6558CC;
+  --primary-light:     #9585F0;
+  --secondary:         #B8A8FF;
+  --accent-primary:    #7C6EE6;      /* compat alias */
+  --accent-secondary:  #B8A8FF;      /* compat alias */
+  --accent:            #EDE9FF;
+  --accent-hover:      #E0D9FF;
+
+  /* ── Background ── */
+  --bg-gradient:       linear-gradient(135deg, #F8F7FF 0%, #EDE9FF 50%, #F0EEF9 100%);
+  --bg-base:           #F8F7FF;
+  --bg-sidebar:        #FFFFFF;
+  --bg-chat:           #F0EEF9;
+  --bg-card:           #FFFFFF;
+  --bg-input:          #F5F3FF;
+  --bg-message-me:     linear-gradient(135deg, #7C6EE6 0%, #9B59B6 100%);
+  --bg-message-them:   #FFFFFF;
+
+  /* ── Glass ── */
+  --glass-bg:          rgba(255, 255, 255, 0.80);
+  --glass-bg-dark:     rgba(255, 255, 255, 0.60);
+  --glass-border:      rgba(124, 110, 230, 0.15);
+  --glass-border-focus:rgba(124, 110, 230, 0.45);
+  --glass-shadow:      0 8px 32px rgba(124, 110, 230, 0.12);
+  --card-shadow:       0 8px 32px rgba(124, 110, 230, 0.12);
+
+  /* ── Text ── */
+  --text-main:         #1A1535;
+  --text-primary:      #1A1535;
+  --text-secondary:    #5A5480;
+  --text-muted:        #9893B8;
+  --text-inverse:      #FFFFFF;
+  --text-h:            #1A1535;
+
+  /* ── Status ── */
+  --success:           #34D399;
+  --warning:           #FBBF24;
+  --danger:            #F87171;
+  --info:              #60A5FA;
+
+  /* ── Borders ── */
+  --border:            rgba(124, 110, 230, 0.12);
+  --border-soft:       rgba(124, 110, 230, 0.12);
+  --border-medium:     rgba(124, 110, 230, 0.25);
+
+  /* ── Radius ── */
+  --radius-xs:   6px;
+  --radius-sm:   10px;
+  --radius-md:   16px;
+  --radius-lg:   24px;
+  --radius-xl:   32px;
+  --radius-full: 9999px;
+
+  /* ── Shadows ── */
+  --shadow-xs:  0 1px 3px rgba(124, 110, 230, 0.08);
+  --shadow-sm:  0 4px 12px rgba(124, 110, 230, 0.10);
+  --shadow-md:  0 8px 24px rgba(124, 110, 230, 0.14);
+  --shadow-lg:  0 16px 48px rgba(124, 110, 230, 0.18);
+  --shadow-xl:  0 24px 64px rgba(124, 110, 230, 0.22);
+
+  /* ── Transition ── */
+  --transition-fast: all 0.15s ease;
+  --transition-base: all 0.25s ease;
+  --transition-slow: all 0.4s ease;
+
+  /* ── Typography ── */
+  --font-family:   'Inter', sans-serif;
+  --font-display:  'Poppins', sans-serif;
+  --font-body:     'Inter', sans-serif;
+
+  /* ── Sidebar ── */
+  --sidebar-width: 340px;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   RESET
+───────────────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-family);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html { font-size: 16px; }
+
+body {
+  background: var(--bg-base);
+  color: var(--text-main);
+  min-height: 100vh;
+  overflow: hidden;
+  line-height: 1.6;
+}
+
+#root {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+a { color: var(--primary); text-decoration: none; }
+img { max-width: 100%; display: block; }
+
+/* ─────────────────────────────────────────────────────────────
+   SCROLLBARS
+───────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-medium); border-radius: var(--radius-full); }
+::-webkit-scrollbar-thumb:hover { background: var(--primary-light); }
+
+/* ─────────────────────────────────────────────────────────────
+   GLASSMORPHISM CONTAINERS (backward compat + new theme)
+───────────────────────────────────────────────────────────── */
+.glass-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: var(--bg-gradient);
+}
+
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--card-shadow);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  transition: var(--transition-base);
+}
+
+.glass-card:hover { border-color: var(--border-medium); }
+
+/* ─────────────────────────────────────────────────────────────
+   INPUTS (glass-input — used by all components)
+───────────────────────────────────────────────────────────── */
+.glass-input-group {
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.glass-label {
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.glass-input {
+  background: var(--bg-input);
+  border: 1.5px solid var(--border-soft);
+  border-radius: var(--radius-full);
+  padding: 11px 18px;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  outline: none;
+  transition: var(--transition-base);
+  width: 100%;
+}
+
+.glass-input::placeholder { color: var(--text-muted); }
+
+.glass-input:focus {
+  border-color: var(--primary);
+  background: #FFFFFF;
+  box-shadow: 0 0 0 3px rgba(124, 110, 230, 0.12);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   BUTTONS (glass-btn — backward compat)
+───────────────────────────────────────────────────────────── */
+.glass-btn {
+  background: var(--primary);
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 11px 24px;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-family: var(--font-display);
+  cursor: pointer;
+  transition: var(--transition-fast);
+  box-shadow: 0 4px 14px rgba(124, 110, 230, 0.35);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.glass-btn:hover {
+  background: var(--primary-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(124, 110, 230, 0.45);
+}
+
+.glass-btn:active { transform: translateY(0); }
+.glass-btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+
+.glass-btn-secondary {
+  background: var(--accent);
+  border: 1.5px solid var(--border-medium);
+  color: var(--primary);
+  box-shadow: none;
+}
+
+.glass-btn-secondary:hover {
+  background: var(--accent-hover);
+  border-color: var(--primary);
+}
+
+.glass-btn-danger {
+  background: var(--danger);
+  box-shadow: 0 4px 14px rgba(248, 113, 113, 0.3);
+}
+
+.glass-btn-danger:hover {
+  background: #EF4444;
+  box-shadow: 0 6px 20px rgba(248, 113, 113, 0.4);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   CALL CONTROLS (circle-control-btn — backward compat)
+───────────────────────────────────────────────────────────── */
+.circle-control-btn {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  border: none;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.circle-control-btn.active {
+  background: var(--danger);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(248, 113, 113, 0.4);
+}
+
+.circle-control-btn.inactive {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.circle-control-btn.inactive:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   CHAT LAYOUT
+───────────────────────────────────────────────────────────── */
+.chat-app-container {
+  display: flex;
+  height: 100vh;
+  background: var(--bg-base);
+  overflow: hidden;
+}
+
+.chat-sidebar {
+  width: var(--sidebar-width);
+  min-width: var(--sidebar-width);
+  border-right: 1px solid var(--border-soft);
+  background: var(--bg-sidebar);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 2px 0 12px rgba(124, 110, 230, 0.06);
+  position: relative;
+  z-index: 10;
+}
+
+.chat-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-chat);
+  position: relative;
+  overflow: hidden;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   CALL / VIDEO OVERLAY
+───────────────────────────────────────────────────────────── */
+.calling-overlay {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(145deg, #1A1535 0%, #2D1F4E 100%);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.3s ease;
+}
+
+.video-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  width: 90%;
+  max-width: 1000px;
+}
+
+@media (min-width: 640px) {
+  .video-grid { grid-template-columns: 1fr 1fr; }
+}
+
+.video-feed {
+  width: 100%;
+  aspect-ratio: 16/9;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  object-fit: cover;
+  transform: scaleX(-1);
+}
+
+.remote-feed { transform: none; }
+
+/* ─────────────────────────────────────────────────────────────
+   CHAT BACKGROUND PATTERN
+───────────────────────────────────────────────────────────── */
+.chat-bg-pattern {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-color: var(--bg-chat);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cg fill='%237C6EE6' fill-opacity='0.045'%3E%3Ccircle cx='20' cy='20' r='7'/%3E%3Cpath d='M60 8c-7.7 0-14 6.3-14 14s6.3 14 14 14 14-6.3 14-14S67.7 8 60 8zm0 22c-4.4 0-8-3.6-8-8s3.6-8 8-8 8 3.6 8 8-3.6 8-8 8z'/%3E%3Cpolygon points='100,10 110,30 90,30'/%3E%3Ccircle cx='20' cy='80' r='5'/%3E%3Cpath d='M70 70l-5 10h10z'/%3E%3Ccircle cx='95' cy='75' r='4'/%3E%3Cpath d='M40 100c0-5.5 4.5-10 10-10s10 4.5 10 10v5H40v-5z'/%3E%3Cpath d='M15 45h10v2H15zm2-3h6v2h-6zm1-3h4v2h-4z'/%3E%3Ccircle cx='105' cy='45' r='3'/%3E%3Cellipse cx='50' cy='55' rx='6' ry='4'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* ─────────────────────────────────────────────────────────────
+   ANIMATIONS
+───────────────────────────────────────────────────────────── */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(60px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.05); }
+}
+
+@keyframes typingBounce {
+  0%, 80%, 100% { transform: scaleY(1); }
+  40% { transform: scaleY(1.6); }
+}
+
+@keyframes recordBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.2; }
+}
+
+.animate-fade-in { animation: fadeIn 0.3s ease forwards; }
+.animate-slide-up { animation: slideUp 0.3s ease forwards; }
+.pulse { animation: pulse 2s infinite; }
+
+/* ─────────────────────────────────────────────────────────────
+   CONTACT / AVATAR UTILITIES
+───────────────────────────────────────────────────────────── */
+.avatar-initials {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: white;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+
+.status-dot-online  { background: var(--success); }
+.status-dot-offline { background: #9E9E9E; }
+
+/* ─────────────────────────────────────────────────────────────
+   RESPONSIVE BREAKPOINTS
+───────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  :root { --sidebar-width: 100%; }
+
+  .chat-sidebar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 50;
+    height: 100vh;
+    transform: translateX(0);
+    transition: transform 0.3s ease;
+  }
+
+  .chat-sidebar.hidden {
+    transform: translateX(-100%);
+  }
+
+  .chat-main { width: 100%; }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  :root { --sidebar-width: 280px; }
+}
+
+@media (min-width: 1400px) {
+  :root { --sidebar-width: 380px; }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   MISC UTILITIES
+───────────────────────────────────────────────────────────── */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
