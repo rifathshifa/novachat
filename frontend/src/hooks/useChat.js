@@ -163,7 +163,7 @@ export const useChat = (activeContact) => {
         },
       });
       
-      const { file_url, content_type, filename } = response.data;
+      const { file_url, content_type, file_name, file_size } = response.data;
       
       // 2. Emit file details over Socket.IO stream
       socket.emit('message_send', {
@@ -172,6 +172,9 @@ export const useChat = (activeContact) => {
         content_type: content_type.startsWith('image/') ? 'image' : 
                      content_type.startsWith('video/') ? 'video' :
                      content_type.startsWith('audio/') ? 'audio' : 'file',
+        file_url: file_url,
+        file_name: file_name,
+        file_size: file_size,
       });
       
       return { success: true };

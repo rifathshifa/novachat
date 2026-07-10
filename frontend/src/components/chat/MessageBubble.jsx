@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { FiCheck, FiCornerUpLeft, FiEdit2, FiTrash2, FiMapPin, FiDownload, FiFileText } from 'react-icons/fi';
+import VoiceMessagePlayer from './VoiceMessagePlayer';
 
 const MessageBubble = ({ message, isMe, onReply, onDelete, onEdit, onPin }) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -91,15 +92,7 @@ const MessageBubble = ({ message, isMe, onReply, onDelete, onEdit, onPin }) => {
         );
       case 'audio':
         return (
-          <audio
-            src={fileUrl}
-            controls
-            style={{
-              maxWidth: '100%',
-              marginTop: '5px',
-              display: 'block'
-            }}
-          />
+          <VoiceMessagePlayer src={fileUrl} isMe={isMe} />
         );
       case 'file':
         const name = message.content.split('/').pop() || 'File';

@@ -1,11 +1,13 @@
 import React, { useState, useRef, useEffect, useContext } from 'react';
 import { SocketContext } from '../../context/SocketContext';
-import { FiPaperclip, FiSend, FiX, FiSmile } from 'react-icons/fi';
+import { FiPaperclip, FiSend, FiX, FiSmile, FiMic } from 'react-icons/fi';
+import VoiceRecorder from './VoiceRecorder';
 
 const MessageInput = ({ recipientId, onSendText, onSendAttachment, replyTo, onCancelReply }) => {
   const { socket } = useContext(SocketContext);
   const [text, setText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [isRecordingMode, setIsRecordingMode] = useState(false);
   const typingTimeoutRef = useRef(null);
   const fileInputRef = useRef(null);
 
@@ -16,6 +18,7 @@ const MessageInput = ({ recipientId, onSendText, onSendAttachment, replyTo, onCa
       setIsTyping(false);
     }
     setText('');
+    setIsRecordingMode(false);
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
   }, [recipientId]);
 
@@ -115,71 +118,105 @@ const MessageInput = ({ recipientId, onSendText, onSendAttachment, replyTo, onCa
       )}
 
       {/* Main Input Form controls */}
-      <form onSubmit={handleSubmit} style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-        <button
-          type="button"
-          onClick={() => fileInputRef.current?.click()}
-          style={{
-            background: 'rgba(255,255,255,0.05)',
-            border: '1px solid var(--glass-border)',
-            borderRadius: '50%',
-            width: '42px',
-            height: '42px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-            color: 'var(--text-muted)',
-            transition: 'all 0.2s ease'
+      {isRecordingMode ? (
+        <VoiceRecorder
+          onSend={(file) => {
+            onSendAttachment(file);
+            setIsRecordingMode(false);
           }}
-          onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--text-main)'; e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; }}
-          onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
-          title="Attach File"
-        >
-          <FiPaperclip style={{ fontSize: '1.25rem' }} />
-        </button>
-        
-        <input
-          type="file"
-          ref={fileInputRef}
-          onChange={handleFileChange}
-          style={{ display: 'none' }}
+          onCancel={() => setIsRecordingMode(false)}
         />
+      ) : (
+        <form onSubmit={handleSubmit} style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            style={{
+              background: 'rgba(255,255,255,0.05)',
+              border: '1px solid var(--glass-border)',
+              borderRadius: '50%',
+              width: '42px',
+              height: '42px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              color: 'var(--text-muted)',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--text-main)'; e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
+            title="Attach File"
+          >
+            <FiPaperclip style={{ fontSize: '1.25rem' }} />
+          </button>
+          
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            style={{ display: 'none' }}
+          />
 
-        <textarea
-          className="glass-input"
-          value={text}
-          onChange={handleChange}
-          onKeyDown={handleKeyPress}
-          placeholder="Type a secure message..."
-          style={{
-            flex: 1,
-            resize: 'none',
-            height: '42px',
-            borderRadius: '21px',
-            padding: '10px 20px',
-            lineHeight: '20px',
-            overflow: 'hidden'
-          }}
-        />
+          <textarea
+            className="glass-input"
+            value={text}
+            onChange={handleChange}
+            onKeyDown={handleKeyPress}
+            placeholder="Type a secure message..."
+            style={{
+              flex: 1,
+              resize: 'none',
+              height: '42px',
+              borderRadius: '21px',
+              padding: '10px 20px',
+              lineHeight: '20px',
+              overflow: 'hidden'
+            }}
+          />
 
-        <button
-          type="submit"
-          className="glass-btn"
-          style={{
-            borderRadius: '50%',
-            width: '42px',
-            height: '42px',
-            padding: 0,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}
-          disabled={!text.trim()}
-        >
-          <FiSend style={{ fontSize: '1.15rem' }} />
-        </button>
-      </form>
+          {text.trim() ? (
+            <button
+              type="submit"
+              className="glass-btn"
+              style={{
+                borderRadius: '50%',
+                width: '42px',
+                height: '42px',
+                padding: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              <FiSend style={{ fontSize: '1.15rem' }} />
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setIsRecordingMode(true)}
+              style={{
+                background: 'rgba(255,255,255,0.05)',
+                border: '1px solid var(--glass-border)',
+                borderRadius: '50%',
+                width: '42px',
+                height: '42px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                color: 'var(--text-muted)',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--text-main)'; e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
+              title="Record Voice Message"
+            >
+              <FiMic style={{ fontSize: '1.15rem' }} />
+            </button>
+          )}
+        </form>
+      )}
     </div>
   );
 };
