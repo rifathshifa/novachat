@@ -10,6 +10,8 @@ const CallWindow = ({
   isMuted,
   isCameraOff,
   callDuration,
+  localStream,
+  remoteStream,
   localVideoRef,
   remoteVideoRef,
   onEndCall,
@@ -17,6 +19,19 @@ const CallWindow = ({
   onToggleCamera,
   contactName,
 }) => {
+  // Bind local and remote streams directly when they are available or when refs mount
+  useEffect(() => {
+    if (localVideoRef.current && localVideoRef.current.srcObject !== localStream) {
+      localVideoRef.current.srcObject = localStream || null;
+    }
+  }, [localVideoRef, localStream]);
+
+  useEffect(() => {
+    if (remoteVideoRef.current && remoteVideoRef.current.srcObject !== remoteStream) {
+      remoteVideoRef.current.srcObject = remoteStream || null;
+    }
+  }, [remoteVideoRef, remoteStream]);
+
   // Format call timer MM:SS
   const formatDuration = (seconds) => {
     const m = Math.floor(seconds / 60).toString().padStart(2, '0');

@@ -43,7 +43,8 @@ def update_profile():
         file = request.files['profile_image']
         if file and file.filename:
             # File validation
-            content_type = file.content_type
+            raw_type = file.content_type or ''
+            content_type = raw_type.split(';')[0].strip()
             if content_type not in ['image/png', 'image/jpeg', 'image/jpg']:
                 return jsonify({'error': 'Invalid image format. Only PNG and JPG are allowed.'}), 400
                 
@@ -92,13 +93,14 @@ def search_users():
     query_str = request.args.get('q', '').strip()
     
     if not query_str:
-        return jsonify([]), 200
-        
-    # Search users matching query, excluding current user
-    results = User.query.filter(
-        (User.id != current_user_id) & 
-        ((User.username.like(f"%{query_str}%")) | (User.email.like(f"%{query_str}%")))
-    ).limit(20).all()
+        # Return all other users if search query is empty
+        results = User.query.filter(User.id != current_user_id).limit(20).all()
+    else:
+        # Search users matching query, excluding current user
+        results = User.query.filter(
+            (User.id != current_user_id) & 
+            ((User.username.like(f"%{query_str}%")) | (User.email.like(f"%{query_str}%")))
+        ).limit(20).all()
     
     users_list = []
     for u in results:

@@ -14,6 +14,7 @@ def register_socket_events(app):
     # Import modules to ensure event handlers are registered with the socketio instance
     from . import chat
     from . import signaling
+    from . import groups
     
     @socketio.on('connect')
     def handle_connect(auth=None):
@@ -50,6 +51,21 @@ def register_socket_events(app):
             if user:
                 user.status = "Online"
                 db.session.commit()
+                
+                # Update all 'sent' messages addressed to this user to 'delivered'
+                from app.models import Message
+                sent_messages = Message.query.filter_by(receiver_id=user_id, status='sent').all()
+                if sent_messages:
+                    for msg in sent_messages:
+                        msg.status = 'delivered'
+                    db.session.commit()
+                    
+                    # Notify the senders of these messages
+                    for msg in sent_messages:
+                        socketio.emit('message_status', {
+                            'message_id': msg.id,
+                            'status': 'delivered'
+                        }, room=f'user_{msg.sender_id}')
                 
                 # Broadcast presence update to everyone
                 socketio.emit('presence_change', {

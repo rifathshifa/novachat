@@ -76,7 +76,8 @@ def upload_attachment():
         if blocked or blocked_by:
             return jsonify({'error': 'File transfer blocked. Moderation restriction active.'}), 403
 
-    declared_type = file.content_type or ''
+    raw_type = file.content_type or ''
+    declared_type = raw_type.split(';')[0].strip()
 
     # ── Allowlist check ──
     if declared_type not in ALLOWED_CONTENT_TYPES:

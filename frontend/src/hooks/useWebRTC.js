@@ -8,6 +8,14 @@ const ICE_SERVERS = {
   ],
 };
 
+const addStreamTracks = (pc, stream) => {
+  if (!pc || !stream) return;
+  const audioTracks = stream.getAudioTracks();
+  const videoTracks = stream.getVideoTracks();
+  audioTracks.forEach((track) => pc.addTrack(track, stream));
+  videoTracks.forEach((track) => pc.addTrack(track, stream));
+};
+
 export const useWebRTC = (activeContact) => {
   const { socket } = useContext(SocketContext);
   const [callState, setCallState] = useState('idle'); // idle, incoming, outgoing, connecting, connected
@@ -19,6 +27,7 @@ export const useWebRTC = (activeContact) => {
   const [callDuration, setCallDuration] = useState(0);
 
   const peerConnectionRef = useRef(null);
+  const localStreamRef = useRef(null);
   const localVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
   const incomingCallRef = useRef(null); // stores active incoming call metadata
@@ -32,6 +41,7 @@ export const useWebRTC = (activeContact) => {
       if (prev) prev.getTracks().forEach((track) => track.stop());
       return null;
     });
+    localStreamRef.current = null;
     setRemoteStream((prev) => {
       if (prev) prev.getTracks().forEach((track) => track.stop());
       return null;
@@ -109,6 +119,7 @@ export const useWebRTC = (activeContact) => {
         audio: true,
       });
       setLocalStream(stream);
+      localStreamRef.current = stream;
       if (localVideoRef.current) {
         localVideoRef.current.srcObject = stream;
       }
@@ -137,12 +148,13 @@ export const useWebRTC = (activeContact) => {
         audio: true,
       });
       setLocalStream(stream);
+      localStreamRef.current = stream;
       if (localVideoRef.current) {
         localVideoRef.current.srcObject = stream;
       }
 
       const pc = createPeerConnection(incoming.caller.id);
-      stream.getTracks().forEach((track) => pc.addTrack(track, stream));
+      addStreamTracks(pc, stream);
 
       socket.emit('call_accept', {
         call_id: incoming.call_id,
@@ -228,8 +240,8 @@ export const useWebRTC = (activeContact) => {
       const targetUserId = data.recipient_id;
       
       const pc = createPeerConnection(targetUserId);
-      if (localStream) {
-        localStream.getTracks().forEach((track) => pc.addTrack(track, localStream));
+      if (localStreamRef.current) {
+        addStreamTracks(pc, localStreamRef.current);
       }
 
       try {
@@ -321,7 +333,7 @@ export const useWebRTC = (activeContact) => {
       socket.off('ice_candidate', handleIceCandidate);
       socket.off('call_ended', handleCallEnded);
     };
-  }, [socket, localStream, createPeerConnection, resetCallState]);
+  }, [socket, createPeerConnection, resetCallState]);
 
   return {
     callState,

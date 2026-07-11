@@ -146,7 +146,8 @@ def update_group(group_id):
     if 'image' in request.files:
         file = request.files['image']
         if file and file.filename:
-            ct = file.content_type
+            raw_type = file.content_type or ''
+            ct = raw_type.split(';')[0].strip()
             if ct not in ('image/png', 'image/jpeg', 'image/jpg', 'image/webp'):
                 return jsonify({'error': 'Invalid image type. Use PNG or JPG.'}), 400
 

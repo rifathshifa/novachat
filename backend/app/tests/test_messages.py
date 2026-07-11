@@ -131,6 +131,20 @@ class MessagesTestCase(unittest.TestCase):
         self.assertIn('file_url', data)
         self.assertEqual(data['content_type'], 'image/png')
 
+        # 1b. Test uploading valid PNG with content type parameter
+        response = self.client.post(
+            '/api/messages/upload',
+            data={
+                'file': (io.BytesIO(png_data), 'test.png', 'image/png;charset=utf-8'),
+                'contact_id': str(self.user2.id)
+            },
+            content_type='multipart/form-data',
+            headers=self.headers1
+        )
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.data)
+        self.assertEqual(data['content_type'], 'image/png')
+
         # 2. Test fake PNG (extension says .png, but magic bytes are wrong)
         fake_png_data = b'NOT_A_PNG_FILE' + b'\x00' * 100
         response = self.client.post(
@@ -163,6 +177,37 @@ class MessagesTestCase(unittest.TestCase):
         self.assertEqual(data['user']['custom_status'], 'Coding')
         self.assertIsNotNone(data['user']['profile_image'])
 
+    def test_audio_upload_validation(self):
+        # List of audio formats to test: (filename, content_type_header, magic_bytes, expected_declared)
+        formats = [
+            ('voice.webm', 'audio/webm;codecs=opus', b'\x1a\x45\xdf\xa3' + b'\x00' * 50, 'audio/webm'),
+            ('voice.webm', 'audio/webm', b'\x1a\x45\xdf\xa3' + b'\x00' * 50, 'audio/webm'),
+            ('voice.mp3', 'audio/mp3', b'ID3' + b'\x00' * 50, 'audio/mp3'),
+            ('voice.mp3', 'audio/mpeg', b'ID3' + b'\x00' * 50, 'audio/mpeg'),
+            ('voice.ogg', 'audio/ogg;codecs=opus', b'OggS' + b'\x00' * 50, 'audio/ogg'),
+            ('voice.ogg', 'audio/ogg', b'OggS' + b'\x00' * 50, 'audio/ogg'),
+            ('voice.wav', 'audio/wav', b'RIFF\x00\x00\x00\x00WAVE' + b'\x00' * 50, 'audio/wav'),
+            ('voice.wav', 'audio/x-wav', b'RIFF\x00\x00\x00\x00WAVE' + b'\x00' * 50, 'audio/x-wav'),
+            ('voice.m4a', 'audio/x-m4a', b'\x00\x00\x00\x18ftyp' + b'\x00' * 50, 'audio/x-m4a'),
+            ('voice.m4a', 'audio/mp4', b'\x00\x00\x00\x18ftyp' + b'\x00' * 50, 'audio/mp4')
+        ]
+
+        for fname, mime_hdr, data_bytes, expected_mime in formats:
+            response = self.client.post(
+                '/api/messages/upload',
+                data={
+                    'file': (io.BytesIO(data_bytes), fname, mime_hdr),
+                    'contact_id': str(self.user2.id)
+                },
+                content_type='multipart/form-data',
+                headers=self.headers1
+            )
+            self.assertEqual(response.status_code, 200, f"Failed on {fname} with {mime_hdr}")
+            data = json.loads(response.data)
+            self.assertIn('file_url', data)
+            self.assertEqual(data['content_type'], expected_mime)
+
 import os
 if __name__ == '__main__':
     unittest.main()
+

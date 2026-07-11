@@ -188,7 +188,7 @@ const MessageBubble = ({ message, isMe, onReply, onDelete, onEdit, onPin }) => {
           ) : (
             <>
               {/* Text content or media attachment */}
-              {message.content_type === 'text' ? (
+              {message.is_deleted || message.content_type === 'text' ? (
                 <p style={{
                   fontSize: '0.95rem',
                   lineHeight: '1.45',

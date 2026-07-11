@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { FiTrash2, FiMic, FiSquare, FiPlay, FiPause, FiSend } from 'react-icons/fi';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { FiTrash2, FiSquare, FiPlay, FiPause, FiSend } from 'react-icons/fi';
 
 const VoiceRecorder = ({ onSend, onCancel }) => {
   const [isRecording, setIsRecording] = useState(false);
@@ -61,7 +61,7 @@ const VoiceRecorder = ({ onSend, onCancel }) => {
       cleanupRecording();
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, []);
+  }, [startRecording, cleanupRecording]);
 
   // Timer Effect
   useEffect(() => {
@@ -85,7 +85,17 @@ const VoiceRecorder = ({ onSend, onCancel }) => {
     previewAudioRef.current = audio;
 
     const handleLoadedMetadata = () => {
-      setPreviewDuration(audio.duration);
+      if (audio.duration === Infinity) {
+        audio.currentTime = 1e101;
+        const handleTimeUpdateForDuration = () => {
+          audio.currentTime = 0;
+          setPreviewDuration(audio.duration);
+          audio.removeEventListener('timeupdate', handleTimeUpdateForDuration);
+        };
+        audio.addEventListener('timeupdate', handleTimeUpdateForDuration);
+      } else {
+        setPreviewDuration(audio.duration);
+      }
     };
 
     const handleTimeUpdate = () => {
@@ -121,7 +131,7 @@ const VoiceRecorder = ({ onSend, onCancel }) => {
     };
   }, [isRecording]);
 
-  const startRecording = async () => {
+  const startRecording = useCallback(async () => {
     chunksRef.current = [];
     setRecordingDuration(0);
     setAudioBlob(null);
@@ -172,7 +182,7 @@ const VoiceRecorder = ({ onSend, onCancel }) => {
       alert('Could not access microphone. Please check permission settings.');
       onCancel();
     }
-  };
+  }, [onCancel]);
 
   const startVisualizer = () => {
     const canvas = canvasRef.current;
@@ -240,7 +250,7 @@ const VoiceRecorder = ({ onSend, onCancel }) => {
     }
   };
 
-  const cleanupRecording = () => {
+  const cleanupRecording = useCallback(() => {
     if (animationRef.current) {
       cancelAnimationFrame(animationRef.current);
     }
@@ -256,7 +266,7 @@ const VoiceRecorder = ({ onSend, onCancel }) => {
       streamRef.current.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
     }
-  };
+  }, []);
 
   const handleDiscard = () => {
     cleanupRecording();

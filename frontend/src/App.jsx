@@ -19,6 +19,8 @@ const App = () => {
   const {
     callState,
     mediaType,
+    localStream,
+    remoteStream,
     isMuted,
     isCameraOff,
     callDuration,
@@ -108,6 +110,8 @@ const App = () => {
           isMuted={isMuted}
           isCameraOff={isCameraOff}
           callDuration={callDuration}
+          localStream={localStream}
+          remoteStream={remoteStream}
           localVideoRef={localVideoRef}
           remoteVideoRef={remoteVideoRef}
           onEndCall={endCall}

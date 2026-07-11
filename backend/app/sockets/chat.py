@@ -118,10 +118,10 @@ def on_message_read(data):
     contact_id = int(contact_id)
 
     try:
-        unread = Message.query.filter_by(
-            sender_id   = contact_id,
-            receiver_id = current_user_id,
-            status      = 'delivered'
+        unread = Message.query.filter(
+            Message.sender_id == contact_id,
+            Message.receiver_id == current_user_id,
+            Message.status.in_(['sent', 'delivered'])
         ).all()
 
         if unread:

@@ -5,7 +5,6 @@ const VoiceMessagePlayer = ({ src, isMe }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
-  const [isLoaded, setIsLoaded] = useState(false);
   
   const audioRef = useRef(null);
   const waveformRef = useRef(null);
@@ -22,8 +21,17 @@ const VoiceMessagePlayer = ({ src, isMe }) => {
     audioRef.current = audio;
 
     const handleLoadedMetadata = () => {
-      setDuration(audio.duration);
-      setIsLoaded(true);
+      if (audio.duration === Infinity) {
+        audio.currentTime = 1e101;
+        const handleTimeUpdateForDuration = () => {
+          audio.currentTime = 0;
+          setDuration(audio.duration);
+          audio.removeEventListener('timeupdate', handleTimeUpdateForDuration);
+        };
+        audio.addEventListener('timeupdate', handleTimeUpdateForDuration);
+      } else {
+        setDuration(audio.duration);
+      }
     };
 
     const handleTimeUpdate = () => {
