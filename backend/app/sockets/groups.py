@@ -3,10 +3,11 @@ groups.py — Socket.IO event handlers for group chat.
 Covers: group_join_room, group_message_send, group_typing_start/stop,
         group_message_edit, group_message_delete.
 """
-from flask import session
+from flask import request
 from flask_socketio import join_room, leave_room, emit
 from app.extensions import socketio, db
 from app.models import GroupMember, GroupMessage, Group, User
+from app.sockets import get_user_id_from_sid
 import datetime
 
 
@@ -28,7 +29,7 @@ def _is_admin(group_id, user_id):
 # ─────────────────────────────────────────────────────────
 @socketio.on('group_join_rooms')
 def on_group_join_rooms(data=None):
-    user_id = session.get('user_id')
+    user_id = get_user_id_from_sid(request.sid)
     if not user_id:
         return
     memberships = GroupMember.query.filter_by(user_id=user_id).all()
@@ -41,7 +42,7 @@ def on_group_join_rooms(data=None):
 # ─────────────────────────────────────────────────────────
 @socketio.on('group_message_send')
 def on_group_message_send(data):
-    user_id  = session.get('user_id')
+    user_id  = get_user_id_from_sid(request.sid)
     group_id = data.get('group_id')
     if not user_id or not group_id:
         return
@@ -105,7 +106,7 @@ def on_group_message_send(data):
 # ─────────────────────────────────────────────────────────
 @socketio.on('group_typing_start')
 def on_group_typing_start(data):
-    user_id  = session.get('user_id')
+    user_id  = get_user_id_from_sid(request.sid)
     group_id = data.get('group_id')
     if not user_id or not group_id:
         return
@@ -123,7 +124,7 @@ def on_group_typing_start(data):
 
 @socketio.on('group_typing_stop')
 def on_group_typing_stop(data):
-    user_id  = session.get('user_id')
+    user_id  = get_user_id_from_sid(request.sid)
     group_id = data.get('group_id')
     if not user_id or not group_id:
         return
@@ -139,7 +140,7 @@ def on_group_typing_stop(data):
 # ─────────────────────────────────────────────────────────
 @socketio.on('group_message_edit')
 def on_group_message_edit(data):
-    user_id     = session.get('user_id')
+    user_id     = get_user_id_from_sid(request.sid)
     message_id  = data.get('message_id')
     new_content = data.get('new_content', '').strip()
     if not user_id or not message_id or not new_content:
@@ -172,7 +173,7 @@ def on_group_message_edit(data):
 # ─────────────────────────────────────────────────────────
 @socketio.on('group_message_delete')
 def on_group_message_delete(data):
-    user_id    = session.get('user_id')
+    user_id    = get_user_id_from_sid(request.sid)
     message_id = data.get('message_id')
     if not user_id or not message_id:
         return

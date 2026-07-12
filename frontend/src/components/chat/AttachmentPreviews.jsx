@@ -2,6 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { FiX, FiSend, FiCamera, FiVideo, FiFileText, FiSearch, FiVolume2, FiRotateCcw } from 'react-icons/fi';
 import api from '../../services/api';
 
+// Media base URL (backend origin) — set VITE_UPLOADS_URL in .env
+const UPLOADS_URL = import.meta.env.VITE_UPLOADS_URL || 'http://localhost:5000';
+
 // Helper to format bytes to human readable sizes
 const formatBytes = (bytes, decimals = 2) => {
   if (bytes === 0) return '0 Bytes';
@@ -474,7 +477,7 @@ export const ContactSelectModal = ({ onCancel, onSend }) => {
                 >
                   {u.profile_image ? (
                     <img
-                      src={`http://localhost:5000${u.profile_image}`}
+                      src={`${UPLOADS_URL}${u.profile_image}`}
                       alt={u.username}
                       style={styles.contactAvatar}
                     />
@@ -501,7 +504,7 @@ export const ContactSelectModal = ({ onCancel, onSend }) => {
             <div style={styles.confirmContactCard}>
               {selectedUser.profile_image ? (
                 <img
-                  src={`http://localhost:5000${selectedUser.profile_image}`}
+                  src={`${UPLOADS_URL}${selectedUser.profile_image}`}
                   alt={selectedUser.username}
                   style={styles.confirmAvatar}
                 />

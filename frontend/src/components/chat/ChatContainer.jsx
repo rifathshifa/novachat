@@ -5,7 +5,10 @@ import { useChat } from '../../hooks/useChat';
 import MessageBubble from './MessageBubble';
 import MessageInput from './MessageInput';
 import api from '../../services/api';
-import { FiPhone, FiVideo, FiShield, FiAlertCircle } from 'react-icons/fi';
+import { FiPhone, FiVideo, FiShield, FiAlertCircle, FiMessageSquare } from 'react-icons/fi';
+
+// Media base URL (backend origin) — set VITE_UPLOADS_URL in .env
+const UPLOADS_URL = import.meta.env.VITE_UPLOADS_URL || 'http://localhost:5000';
 
 const ChatContainer = ({ activeContact, onStartCall }) => {
   const { user } = useContext(AuthContext);
@@ -21,6 +24,7 @@ const ChatContainer = ({ activeContact, onStartCall }) => {
   const {
     messages,
     loadingHistory,
+    sendError,
     loadMoreMessages,
     sendTextMessage,
     sendAttachmentMessage,
@@ -82,11 +86,40 @@ const ChatContainer = ({ activeContact, onStartCall }) => {
         alignItems: 'center',
         justifyContent: 'center',
         color: 'var(--text-muted)',
-        background: 'rgba(255, 255, 255, 0.01)',
-        backdropFilter: 'blur(10px)'
+        background: 'var(--bg-chat)',
+        position: 'relative'
       }}>
-        <h3 style={{ marginBottom: '10px', fontSize: '1.4rem' }}>Welcome to NovaChat</h3>
-        <p style={{ fontSize: '0.95rem' }}>Select a contact or search for users to begin secure messaging.</p>
+        <div className="chat-bg-pattern" />
+        <div style={{
+          position: 'relative',
+          zIndex: 1,
+          textAlign: 'center',
+          padding: '40px',
+          maxWidth: '440px',
+          animation: 'scaleUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards'
+        }}>
+          <div style={{
+            width: '80px',
+            height: '80px',
+            background: 'var(--primary-light)',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '2.5rem',
+            color: 'var(--primary)',
+            margin: '0 auto 20px auto',
+            boxShadow: '0 8px 24px rgba(124, 58, 237, 0.1)'
+          }}>
+            <FiMessageSquare />
+          </div>
+          <h3 style={{ marginBottom: '12px', fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+            Welcome to NovaChat
+          </h3>
+          <p style={{ fontSize: '0.925rem', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
+            Select a contact from the sidebar or search for users to begin secure, real-time end-to-end messaging.
+          </p>
+        </div>
       </div>
     );
   }
@@ -96,90 +129,53 @@ const ChatContainer = ({ activeContact, onStartCall }) => {
 
   return (
     <div className="chat-main animate-fade-in">
+      {/* Background wallpaper pattern */}
+      <div className="chat-bg-pattern" />
+
       {/* Header section */}
-      <div style={{
-        padding: '15px 30px',
-        borderBottom: '1px solid var(--glass-border)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        background: 'rgba(10, 10, 20, 0.45)',
-        backdropFilter: 'blur(10px)'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+      <div className="chat-window-header">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
           {activeContact.profile_image ? (
             <img
-              src={`http://localhost:5000${activeContact.profile_image}`}
+              src={`${UPLOADS_URL}${activeContact.profile_image}`}
               alt={activeContact.username}
               style={{ width: '42px', height: '42px', borderRadius: '50%', objectFit: 'cover' }}
             />
           ) : (
-            <div style={{
-              width: '42px',
-              height: '42px',
-              borderRadius: '50%',
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid var(--glass-border)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontWeight: 600
-            }}>
+            <div className="avatar-initials" style={{ width: '42px', height: '42px', fontSize: '0.95rem' }}>
               {activeContact.username.substring(0, 2).toUpperCase()}
             </div>
           )}
           
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <span style={{ fontWeight: 600, fontSize: '1rem' }}>{activeContact.username}</span>
-            <span style={{ fontSize: '0.78rem', color: isContactOnline ? 'var(--success)' : 'var(--text-muted)' }}>
+            <span style={{ fontWeight: 700, fontSize: '0.975rem', color: 'var(--text-primary)' }}>
+              {activeContact.username}
+            </span>
+            <span style={{
+              fontSize: '0.78rem',
+              fontWeight: 500,
+              color: isTyping ? 'var(--primary)' : (isContactOnline ? 'var(--success)' : 'var(--text-muted)')
+            }}>
               {isTyping ? 'typing...' : (isContactOnline ? 'Online' : 'Offline')}
             </span>
           </div>
         </div>
 
         {/* Action Controls */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           {/* Peer-to-Peer Calling buttons (WebRTC limited to unblocked states) */}
           {!isBlocked && !isBlockedBy && (
             <>
               <button
                 onClick={() => onStartCall('audio')}
-                style={{
-                  background: 'rgba(255,255,255,0.05)',
-                  border: '1px solid var(--glass-border)',
-                  borderRadius: '50%',
-                  width: '40px',
-                  height: '40px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: 'pointer',
-                  color: 'var(--text-main)',
-                  transition: 'all 0.2s ease'
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
-                onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                className="circle-btn"
                 title="Voice Call"
               >
                 <FiPhone />
               </button>
               <button
                 onClick={() => onStartCall('video')}
-                style={{
-                  background: 'rgba(255,255,255,0.05)',
-                  border: '1px solid var(--glass-border)',
-                  borderRadius: '50%',
-                  width: '40px',
-                  height: '40px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: 'pointer',
-                  color: 'var(--text-main)',
-                  transition: 'all 0.2s ease'
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
-                onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                className="circle-btn"
                 title="Video Call"
               >
                 <FiVideo />
@@ -190,19 +186,12 @@ const ChatContainer = ({ activeContact, onStartCall }) => {
           {/* Block moderation control */}
           <button
             onClick={handleBlockToggle}
-            style={{
-              background: isBlocked ? 'rgba(255, 23, 68, 0.15)' : 'rgba(255,255,255,0.05)',
-              border: isBlocked ? '1px solid var(--danger)' : '1px solid var(--glass-border)',
-              borderRadius: '50%',
-              width: '40px',
-              height: '40px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              color: isBlocked ? 'var(--danger)' : 'var(--text-muted)',
-              transition: 'all 0.2s ease'
-            }}
+            className={`circle-btn danger-action`}
+            style={isBlocked ? {
+              background: 'rgba(239, 68, 68, 0.15)',
+              borderColor: 'var(--danger)',
+              color: 'var(--danger)'
+            } : {}}
             title={isBlocked ? 'Unblock Contact' : 'Block Contact'}
           >
             <FiShield />
@@ -217,13 +206,15 @@ const ChatContainer = ({ activeContact, onStartCall }) => {
         style={{
           flex: 1,
           overflowY: 'auto',
-          padding: '20px 30px',
+          padding: '24px 30px',
           display: 'flex',
-          flexDirection: 'column'
+          flexDirection: 'column',
+          position: 'relative',
+          zIndex: 1
         }}
       >
         {loadingHistory && (
-          <p style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '15px' }}>
+          <p style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.82rem', marginBottom: '20px', fontWeight: 500 }}>
             Loading message history...
           </p>
         )}
@@ -232,8 +223,14 @@ const ChatContainer = ({ activeContact, onStartCall }) => {
           <div style={{
             margin: 'auto',
             textAlign: 'center',
-            color: 'var(--text-muted)',
-            fontSize: '0.9rem'
+            color: 'var(--text-secondary)',
+            fontSize: '0.9rem',
+            background: 'rgba(255,255,255,0.6)',
+            padding: '12px 24px',
+            borderRadius: '20px',
+            backdropFilter: 'blur(8px)',
+            border: '1px solid var(--border-soft)',
+            fontWeight: 500
           }}>
             No messages. Start a secure conversation.
           </div>
@@ -254,17 +251,21 @@ const ChatContainer = ({ activeContact, onStartCall }) => {
       </div>
 
       {/* Error displays */}
-      {uploadError && (
+      {(uploadError || sendError) && (
         <div style={{
-          background: 'rgba(255, 23, 68, 0.15)',
-          color: '#ff8a80',
-          padding: '10px 30px',
+          background: 'rgba(239, 68, 68, 0.08)',
+          borderTop: '1px solid rgba(239, 68, 68, 0.15)',
+          color: 'var(--danger)',
+          padding: '12px 30px',
           fontSize: '0.85rem',
           display: 'flex',
           alignItems: 'center',
-          gap: '10px'
+          gap: '8px',
+          position: 'relative',
+          zIndex: 1,
+          fontWeight: 500
         }}>
-          <FiAlertCircle /> {uploadError}
+          <FiAlertCircle /> <span>{uploadError || sendError}</span>
         </div>
       )}
 
@@ -273,10 +274,13 @@ const ChatContainer = ({ activeContact, onStartCall }) => {
         <div style={{
           padding: '20px',
           textAlign: 'center',
-          background: 'rgba(255, 23, 68, 0.08)',
-          color: '#ff8a80',
-          fontSize: '0.9rem',
-          borderTop: '1px solid rgba(255, 23, 68, 0.2)'
+          background: 'rgba(239, 68, 68, 0.08)',
+          color: 'var(--danger)',
+          fontSize: '0.875rem',
+          fontWeight: 600,
+          borderTop: '1px solid rgba(239, 68, 68, 0.15)',
+          position: 'relative',
+          zIndex: 1
         }}>
           You have blocked this contact. Unblock to resume messaging.
         </div>
@@ -284,10 +288,13 @@ const ChatContainer = ({ activeContact, onStartCall }) => {
         <div style={{
           padding: '20px',
           textAlign: 'center',
-          background: 'rgba(255, 23, 68, 0.08)',
-          color: '#ff8a80',
-          fontSize: '0.9rem',
-          borderTop: '1px solid rgba(255, 23, 68, 0.2)'
+          background: 'rgba(239, 68, 68, 0.08)',
+          color: 'var(--danger)',
+          fontSize: '0.875rem',
+          fontWeight: 600,
+          borderTop: '1px solid rgba(239, 68, 68, 0.15)',
+          position: 'relative',
+          zIndex: 1
         }}>
           You cannot send messages to this contact. Block active.
         </div>

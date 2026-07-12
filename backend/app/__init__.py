@@ -1,4 +1,5 @@
 import os
+import re
 from flask import Flask, send_from_directory, jsonify, request as flask_request
 from app.config import Config
 from app.extensions import db, bcrypt, jwt, socketio, cors
@@ -13,9 +14,20 @@ def create_app(config_class=Config):
     bcrypt.init_app(app)
     jwt.init_app(app)
 
+    # Match any localhost origin (with or without port, http or https)
+    LOCALHOST_REGEX = re.compile(r"^https?://(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$")
+
+    # Generate list of allowed origins (including regex for localhost)
+    allowed_origins = list(app.config['CORS_ALLOWED_ORIGINS'])
+    allowed_origins.extend([
+        re.compile(r"^https?://localhost(:\d+)?$"),
+        re.compile(r"^https?://127\.0\.0\.1(:\d+)?$"),
+        re.compile(r"^https?://\[::1\](:\d+)?$")
+    ])
+
     # ── CORS for REST API (supports credentials / HttpOnly cookies) ──
     cors.init_app(app, resources={r'/api/*': {
-        'origins': app.config['CORS_ALLOWED_ORIGINS'],
+        'origins': allowed_origins,
         'supports_credentials': True,
     }})
 
@@ -24,7 +36,15 @@ def create_app(config_class=Config):
     def add_cors_headers(response):
         origin = flask_request.headers.get('Origin')
         allowed = app.config['CORS_ALLOWED_ORIGINS']
-        if origin and origin in allowed:
+        
+        is_allowed = False
+        if origin:
+            if origin in allowed:
+                is_allowed = True
+            elif LOCALHOST_REGEX.match(origin):
+                is_allowed = True
+
+        if is_allowed:
             response.headers['Access-Control-Allow-Origin'] = origin
             response.headers['Access-Control-Allow-Credentials'] = 'true'
             response.headers['Access-Control-Allow-Headers'] = 'Content-Type,Authorization'
@@ -45,9 +65,28 @@ def create_app(config_class=Config):
         return jsonify({'error': 'Invalid token', 'details': reason}), 401
 
     # ── Socket.IO with same CORS policy ──
+    raw_origins = app.config['CORS_ALLOWED_ORIGINS']
+
+    # Support wildcard '*' for production deployments
+    if raw_origins == ['*'] or raw_origins == '*':
+        socketio_origins = '*'
+    else:
+        socketio_origins = list(raw_origins)
+        # Allow common localhost ports in development
+        dev_ports = list(range(5173, 5185)) + list(range(3000, 3010))
+        for port in dev_ports:
+            for scheme in ["http", "https"]:
+                socketio_origins.extend([
+                    f"{scheme}://localhost:{port}",
+                    f"{scheme}://127.0.0.1:{port}",
+                    f"{scheme}://[::1]:{port}"
+                ])
+        seen = set()
+        socketio_origins = [x for x in socketio_origins if not (x in seen or seen.add(x))]
+
     socketio.init_app(
         app,
-        cors_allowed_origins=app.config['CORS_ALLOWED_ORIGINS'],
+        cors_allowed_origins=socketio_origins,
         async_mode='eventlet',       # eventlet is in requirements.txt
         logger=False,
         engineio_logger=False,

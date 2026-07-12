@@ -328,7 +328,7 @@ const VoiceRecorder = ({ onSend, onCancel }) => {
       gap: '15px',
       flex: 1,
       width: '100%',
-      background: 'rgba(255, 255, 255, 0.04)',
+      background: 'var(--bg-input)',
       border: '1px solid var(--glass-border)',
       borderRadius: '21px',
       padding: '0 15px',
@@ -338,23 +338,17 @@ const VoiceRecorder = ({ onSend, onCancel }) => {
       <button
         type="button"
         onClick={handleDiscard}
+        className="circle-btn danger-action"
         style={{
+          width: '32px',
+          height: '32px',
           background: 'none',
           border: 'none',
-          color: 'var(--danger)',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '6px',
-          borderRadius: '50%',
-          transition: 'background 0.2s'
+          padding: 0
         }}
-        onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(248, 113, 113, 0.15)'}
-        onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
         title="Discard Recording"
       >
-        <FiTrash2 style={{ fontSize: '1.2rem' }} />
+        <FiTrash2 style={{ fontSize: '1.1rem' }} />
       </button>
 
       {/* Recording Phase vs Preview Phase */}
@@ -366,7 +360,7 @@ const VoiceRecorder = ({ onSend, onCancel }) => {
             alignItems: 'center',
             gap: '8px',
             color: 'var(--danger)',
-            fontSize: '0.88rem',
+            fontSize: '0.85rem',
             fontWeight: 600
           }}>
             <span style={{
@@ -395,25 +389,16 @@ const VoiceRecorder = ({ onSend, onCancel }) => {
           <button
             type="button"
             onClick={stopRecording}
+            className="circle-btn"
             style={{
-              background: 'rgba(255, 255, 255, 0.06)',
-              border: '1px solid var(--glass-border)',
-              borderRadius: '50%',
               width: '32px',
               height: '32px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              color: 'var(--text-main)',
-              transition: 'background 0.2s',
+              padding: 0,
               marginLeft: 'auto'
             }}
-            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
-            onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}
             title="Stop & Preview"
           >
-            <FiSquare style={{ fontSize: '0.9rem', color: 'var(--text-primary)' }} />
+            <FiSquare style={{ fontSize: '0.85rem', color: 'var(--text-primary)' }} />
           </button>
         </>
       ) : (
@@ -422,26 +407,21 @@ const VoiceRecorder = ({ onSend, onCancel }) => {
           <button
             type="button"
             onClick={togglePreviewPlay}
+            className="circle-btn"
             style={{
+              width: '32px',
+              height: '32px',
               background: 'none',
               border: 'none',
-              color: 'var(--primary-light)',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '6px',
-              borderRadius: '50%',
-              transition: 'background 0.2s'
+              color: 'var(--primary)',
+              padding: 0
             }}
-            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(184, 168, 255, 0.15)'}
-            onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
             title={isPlayingPreview ? 'Pause' : 'Play Preview'}
           >
             {isPlayingPreview ? (
-              <FiPause style={{ fontSize: '1.15rem' }} />
+              <FiPause style={{ fontSize: '1.1rem' }} />
             ) : (
-              <FiPlay style={{ fontSize: '1.15rem', marginLeft: '1px' }} />
+              <FiPlay style={{ fontSize: '1.1rem', marginLeft: '1px' }} />
             )}
           </button>
 
@@ -452,7 +432,7 @@ const VoiceRecorder = ({ onSend, onCancel }) => {
             gap: '10px',
             flex: 1
           }}>
-            <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontFamily: 'monospace' }}>
+            <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontFamily: 'monospace', fontWeight: 500 }}>
               {formatDuration(previewTime)}
             </span>
             
@@ -472,7 +452,7 @@ const VoiceRecorder = ({ onSend, onCancel }) => {
               }}
             />
             
-            <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontFamily: 'monospace' }}>
+            <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontFamily: 'monospace', fontWeight: 500 }}>
               {formatDuration(previewDuration || 0)}
             </span>
           </div>
@@ -481,25 +461,16 @@ const VoiceRecorder = ({ onSend, onCancel }) => {
           <button
             type="button"
             onClick={handleSendRecording}
+            className="circle-btn circle-btn-solid"
             style={{
-              background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%)',
-              border: 'none',
-              borderRadius: '50%',
               width: '32px',
               height: '32px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              color: '#ffffff',
-              boxShadow: '0 2px 8px rgba(124, 110, 230, 0.3)',
-              transition: 'transform 0.15s ease'
+              border: 'none',
+              padding: 0
             }}
-            onMouseDown={(e) => { e.currentTarget.style.transform = 'scale(0.9)'; }}
-            onMouseUp={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
             title="Send Voice Message"
           >
-            <FiSend style={{ fontSize: '0.9rem', color: '#ffffff' }} />
+            <FiSend style={{ fontSize: '0.85rem', color: '#ffffff' }} />
           </button>
         </>
       )}

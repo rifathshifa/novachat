@@ -72,72 +72,78 @@ const CallWindow = ({
   }, [callState]);
 
   return (
-    <div className="calling-overlay animate-fade-in">
+    <div className="calling-overlay-custom">
       <div style={{
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         width: '90%',
-        maxWidth: '900px',
+        maxWidth: '960px',
       }}>
         {/* Call Status & Timer */}
-        <div style={{ textAlign: 'center', marginBottom: '25px' }}>
-          <h2 style={{ fontSize: '1.4rem', fontWeight: 700, marginBottom: '6px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+          <h2 style={{ fontSize: '1.8rem', fontWeight: 800, marginBottom: '6px', letterSpacing: '-0.5px' }}>
             {contactName || 'Unknown'}
           </h2>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>
+          <p style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.95rem', fontWeight: 500 }}>
             {callState === 'outgoing' && 'Ringing...'}
             {callState === 'connecting' && 'Connecting...'}
             {callState === 'connected' && formatDuration(callDuration)}
           </p>
         </div>
 
-        {/* Video Feeds */}
-        <div className="video-grid">
+        {/* Video Feeds Grid */}
+        <div className="video-feeds-grid">
           {/* Local Stream */}
-          <div style={{ position: 'relative' }}>
+          <div className="video-element-wrapper">
             <video
               ref={localVideoRef}
               autoPlay
               muted
               playsInline
-              className="video-feed"
+              className="video-feed-source"
               style={{
-                opacity: isCameraOff ? 0.2 : 1,
+                opacity: isCameraOff ? 0.25 : 1,
                 transition: 'opacity 0.3s ease',
               }}
             />
             <span style={{
               position: 'absolute',
-              bottom: '10px',
-              left: '10px',
-              background: 'rgba(0,0,0,0.5)',
-              padding: '4px 10px',
-              borderRadius: '6px',
-              fontSize: '0.8rem',
-              color: '#fff',
+              bottom: '14px',
+              left: '14px',
+              background: 'rgba(15, 10, 30, 0.6)',
+              padding: '6px 12px',
+              borderRadius: '8px',
+              fontSize: '0.78rem',
+              fontWeight: 600,
+              color: '#ffffff',
+              backdropFilter: 'blur(8px)',
+              border: '1px solid rgba(255, 255, 255, 0.1)'
             }}>
               You
             </span>
           </div>
 
           {/* Remote Stream */}
-          <div style={{ position: 'relative' }}>
+          <div className="video-element-wrapper">
             <video
               ref={remoteVideoRef}
               autoPlay
               playsInline
-              className="video-feed remote-feed"
+              className="video-feed-source remote"
             />
             <span style={{
               position: 'absolute',
-              bottom: '10px',
-              left: '10px',
-              background: 'rgba(0,0,0,0.5)',
-              padding: '4px 10px',
-              borderRadius: '6px',
-              fontSize: '0.8rem',
-              color: '#fff',
+              bottom: '14px',
+              left: '14px',
+              background: 'rgba(15, 10, 30, 0.6)',
+              padding: '6px 12px',
+              borderRadius: '8px',
+              fontSize: '0.78rem',
+              fontWeight: 600,
+              color: '#ffffff',
+              backdropFilter: 'blur(8px)',
+              border: '1px solid rgba(255, 255, 255, 0.1)'
             }}>
               {contactName || 'Remote'}
             </span>
@@ -147,13 +153,15 @@ const CallWindow = ({
         {/* Call Controls */}
         <div style={{
           display: 'flex',
-          gap: '15px',
-          marginTop: '35px',
+          gap: '20px',
+          alignItems: 'center',
+          marginTop: '25px',
         }}>
           {/* Mute Toggle */}
           <button
             onClick={onToggleMute}
             className={`circle-control-btn ${isMuted ? 'active' : 'inactive'}`}
+            style={{ width: '56px', height: '56px', fontSize: '1.35rem' }}
             title={isMuted ? 'Unmute' : 'Mute'}
           >
             {isMuted ? <FiMicOff /> : <FiMic />}
@@ -164,6 +172,7 @@ const CallWindow = ({
             <button
               onClick={onToggleCamera}
               className={`circle-control-btn ${isCameraOff ? 'active' : 'inactive'}`}
+              style={{ width: '56px', height: '56px', fontSize: '1.35rem' }}
               title={isCameraOff ? 'Turn Camera On' : 'Turn Camera Off'}
             >
               {isCameraOff ? <FiVideoOff /> : <FiVideo />}
@@ -174,7 +183,13 @@ const CallWindow = ({
           <button
             onClick={onEndCall}
             className="circle-control-btn active"
-            style={{ width: '56px', height: '56px', fontSize: '1.4rem' }}
+            style={{
+              width: '64px',
+              height: '64px',
+              fontSize: '1.5rem',
+              background: 'var(--danger)',
+              boxShadow: '0 6px 20px rgba(239, 68, 68, 0.45)'
+            }}
             title="End Call"
           >
             <FiPhoneOff />

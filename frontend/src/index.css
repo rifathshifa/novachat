@@ -1434,6 +1434,296 @@ img { max-width: 100%; display: block; }
   right: 0;
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   Chat UI — MessageBubble & ChatContainer Component Styles
+   WhatsApp/Messenger inspired — production-ready chat bubbles
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Chat Window Header (used in ChatContainer) ── */
+.chat-window-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border-soft);
+  box-shadow: 0 1px 8px rgba(124, 110, 230, 0.07);
+  position: relative;
+  z-index: 5;
+  flex-shrink: 0;
+}
+
+/* ── Chat Background Pattern (wallpaper) ── */
+.chat-bg-pattern {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-color: var(--bg-chat);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cg fill='%237C6EE6' fill-opacity='0.04'%3E%3Ccircle cx='20' cy='20' r='7'/%3E%3Cpath d='M60 8c-7.7 0-14 6.3-14 14s6.3 14 14 14 14-6.3 14-14S67.7 8 60 8zm0 22c-4.4 0-8-3.6-8-8s3.6-8 8-8 8 3.6 8 8-3.6 8-8 8z'/%3E%3Cpolygon points='100,10 110,30 90,30'/%3E%3Ccircle cx='20' cy='80' r='5'/%3E%3Cpath d='M70 70l-5 10h10z'/%3E%3Ccircle cx='95' cy='75' r='4'/%3E%3Cpath d='M40 100c0-5.5 4.5-10 10-10s10 4.5 10 10v5H40v-5z'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* ── Animate Fade-In (used on chat-main mount) ── */
+.animate-fade-in {
+  animation: fadeIn 0.25s ease forwards;
+}
+
+/* ── Circle Icon Buttons (call, block in ChatContainer) ── */
+.circle-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid var(--border-soft);
+  background: var(--bg-input);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.circle-btn:hover {
+  background: var(--accent);
+  border-color: var(--border-medium);
+  color: var(--primary);
+  transform: scale(1.05);
+}
+
+.circle-btn.danger-action:hover {
+  background: rgba(248, 113, 113, 0.12);
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+/* ── Glass Button (used in edit form) ── */
+.glass-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 14px;
+  background: rgba(124, 110, 230, 0.12);
+  color: var(--primary);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-full);
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.glass-btn:hover {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+/* ══════════════════════════════════════════════════
+   MESSAGE WRAPPER — outer row that aligns the bubble
+   ══════════════════════════════════════════════════ */
+
+.message-wrapper {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  margin-bottom: 3px;
+  width: 100%;
+  position: relative;
+}
+
+/* Sent messages: push to the right */
+.message-wrapper.me {
+  flex-direction: row-reverse;
+  justify-content: flex-start;
+}
+
+/* Received messages: push to the left */
+.message-wrapper.them {
+  flex-direction: row;
+  justify-content: flex-start;
+}
+
+/* ══════════════════════════════════════════════════
+   BUBBLE CARD — the actual speech bubble container
+   ══════════════════════════════════════════════════ */
+.bubble-card {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  width: fit-content;
+  min-width: 70px;
+  max-width: 420px;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+/* Sent (me) bubble — purple gradient */
+.bubble-card.me {
+  background: linear-gradient(135deg, #7C6EE6 0%, #9B59B6 100%);
+  color: #ffffff;
+  border-radius: 18px 18px 4px 18px;
+  box-shadow: 0 2px 8px rgba(124, 110, 230, 0.28);
+  align-self: flex-end;
+}
+
+/* Received (them) bubble — white card */
+.bubble-card.them {
+  background: #FFFFFF;
+  color: var(--text-primary);
+  border-radius: 18px 18px 18px 4px;
+  border: 1px solid var(--border-soft);
+  box-shadow: 0 1px 4px rgba(124, 110, 230, 0.08);
+  align-self: flex-start;
+}
+
+/* ══════════════════════════════════════════════════
+   BUBBLE TEXT — the message paragraph
+   Critical: prevent vertical letter stacking
+   ══════════════════════════════════════════════════ */
+
+.bubble-text-content {
+  display: block;
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  line-height: 1.5;
+  width: 100%;
+}
+
+
+
+/* ══════════════════════════════════════════════════
+   BUBBLE MEDIA — images and videos inside bubbles
+   ══════════════════════════════════════════════════ */
+
+.bubble-media-wrapper {
+  display: block;
+  border-radius: 12px;
+  overflow: hidden;
+  max-width: 280px;
+  width: 100%;
+}
+
+.bubble-media-image {
+  display: block;
+  width: 100%;
+  max-width: 280px;
+  max-height: 260px;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
+/* ══════════════════════════════════════════════════
+   BUBBLE FILE CARD — file attachment inside bubble
+   ══════════════════════════════════════════════════ */
+
+.bubble-file-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  text-decoration: none;
+  min-width: 200px;
+  max-width: 260px;
+  background: rgba(124, 110, 230, 0.07);
+  border: 1px solid var(--border-soft);
+  transition: var(--transition-fast);
+  color: var(--text-primary);
+}
+
+.bubble-file-card:hover {
+  background: rgba(124, 110, 230, 0.12);
+}
+
+.bubble-card.me .bubble-file-card {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.25);
+  color: white;
+}
+
+.bubble-card.me .bubble-file-card:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+/* ══════════════════════════════════════════════════
+   BUBBLE MENU OVERLAY — hover action buttons
+   ══════════════════════════════════════════════════ */
+
+.bubble-menu-overlay {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-full);
+  padding: 3px 6px;
+  box-shadow: var(--shadow-md);
+  z-index: 50;
+  animation: fadeIn 0.15s ease;
+  white-space: nowrap;
+}
+
+.bubble-menu-overlay button {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  padding: 0;
+}
+
+.bubble-menu-overlay button:hover {
+  background: var(--accent);
+  color: var(--primary);
+  transform: scale(1.1);
+}
+
+.bubble-menu-overlay button.btn-danger-hover:hover {
+  background: rgba(248, 113, 113, 0.12);
+  color: var(--danger);
+}
+
+/* ── Danger hover class used on delete button ── */
+.btn-danger-hover:hover {
+  background: rgba(248, 113, 113, 0.12) !important;
+  color: var(--danger) !important;
+}
+
+/* ── Scale-up animation for empty state ── */
+@keyframes scaleUp {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* ── Accent secondary for double-tick read ── */
+:root {
+  --accent-secondary: #60A5FA;
+}
+
+/* ── Responsive: wider bubbles on mobile ── */
+@media (max-width: 600px) {
+  .bubble-card {
+    max-width: 82%;
+  }
+  .bubble-media-image,
+  .bubble-media-wrapper {
+    max-width: 220px;
+  }
+}
+
 /* ── Animations ── */
 @keyframes fadeIn {
   from { opacity: 0; }

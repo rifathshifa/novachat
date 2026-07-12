@@ -112,5 +112,28 @@ class AuthTestCase(unittest.TestCase):
         data = json.loads(response.data)
         self.assertIn('Invalid email/username or password', data['error'])
 
+    def test_cors_headers(self):
+        # Test that localhost dynamic ports get CORS headers
+        response = self.client.post(
+            '/api/auth/login',
+            headers={'Origin': 'http://localhost:5176'}
+        )
+        self.assertEqual(response.headers.get('Access-Control-Allow-Origin'), 'http://localhost:5176')
+        self.assertEqual(response.headers.get('Access-Control-Allow-Credentials'), 'true')
+
+        # Test that standard config CORS origins get CORS headers
+        response = self.client.post(
+            '/api/auth/login',
+            headers={'Origin': 'http://127.0.0.1:5173'}
+        )
+        self.assertEqual(response.headers.get('Access-Control-Allow-Origin'), 'http://127.0.0.1:5173')
+
+        # Test that untrusted origins do not get CORS headers
+        response = self.client.post(
+            '/api/auth/login',
+            headers={'Origin': 'http://attacker.com'}
+        )
+        self.assertIsNone(response.headers.get('Access-Control-Allow-Origin'))
+
 if __name__ == '__main__':
     unittest.main()

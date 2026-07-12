@@ -74,45 +74,40 @@ const MessageInput = ({ recipientId, onSendText, onSendAttachment, replyTo, onCa
   };
 
   return (
-    <div style={{
-      borderTop: '1px solid var(--glass-border)',
-      padding: '15px 20px',
-      background: 'rgba(10, 10, 20, 0.45)',
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '10px'
-    }}>
+    <div className="composition-area">
       {/* Reply Reference Preview Banner */}
       {replyTo && (
         <div style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          background: 'rgba(124, 77, 255, 0.12)',
-          borderLeft: '4px solid var(--accent-primary)',
-          padding: '8px 12px',
-          borderRadius: '6px',
-          fontSize: '0.85rem'
+          background: 'rgba(124, 58, 237, 0.08)',
+          borderLeft: '4px solid var(--primary)',
+          padding: '10px 16px',
+          borderRadius: '8px',
+          fontSize: '0.85rem',
+          animation: 'slideUp 0.25s ease'
         }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-            <span style={{ fontWeight: 600, color: 'var(--accent-secondary)' }}>
+            <span style={{ fontWeight: 700, color: 'var(--primary)' }}>
               Replying to Message
             </span>
             <span style={{
-              color: 'var(--text-muted)',
+              color: 'var(--text-secondary)',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               whiteSpace: 'nowrap',
-              maxWidth: '500px'
+              maxWidth: '500px',
+              fontWeight: 500
             }}>
               {replyTo.content_type === 'text' ? replyTo.content : `[${replyTo.content_type} file]`}
             </span>
           </div>
           <button
             onClick={onCancelReply}
-            style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex' }}
+            style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', padding: '4px' }}
           >
-            <FiX />
+            <FiX style={{ fontSize: '1.1rem' }} />
           </button>
         </div>
       )}
@@ -127,28 +122,14 @@ const MessageInput = ({ recipientId, onSendText, onSendAttachment, replyTo, onCa
           onCancel={() => setIsRecordingMode(false)}
         />
       ) : (
-        <form onSubmit={handleSubmit} style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            style={{
-              background: 'rgba(255,255,255,0.05)',
-              border: '1px solid var(--glass-border)',
-              borderRadius: '50%',
-              width: '42px',
-              height: '42px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              color: 'var(--text-muted)',
-              transition: 'all 0.2s ease'
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--text-main)'; e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
+            className="circle-btn"
             title="Attach File"
           >
-            <FiPaperclip style={{ fontSize: '1.25rem' }} />
+            <FiPaperclip style={{ fontSize: '1.2rem' }} />
           </button>
           
           <input
@@ -159,7 +140,7 @@ const MessageInput = ({ recipientId, onSendText, onSendAttachment, replyTo, onCa
           />
 
           <textarea
-            className="glass-input"
+            className="glass-input glass-input-capsule"
             value={text}
             onChange={handleChange}
             onKeyDown={handleKeyPress}
@@ -168,7 +149,6 @@ const MessageInput = ({ recipientId, onSendText, onSendAttachment, replyTo, onCa
               flex: 1,
               resize: 'none',
               height: '42px',
-              borderRadius: '21px',
               padding: '10px 20px',
               lineHeight: '20px',
               overflow: 'hidden'
@@ -178,41 +158,19 @@ const MessageInput = ({ recipientId, onSendText, onSendAttachment, replyTo, onCa
           {text.trim() ? (
             <button
               type="submit"
-              className="glass-btn"
-              style={{
-                borderRadius: '50%',
-                width: '42px',
-                height: '42px',
-                padding: 0,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}
+              className="circle-btn circle-btn-solid"
+              style={{ width: '42px', height: '42px', padding: 0 }}
             >
-              <FiSend style={{ fontSize: '1.15rem' }} />
+              <FiSend style={{ fontSize: '1.05rem' }} />
             </button>
           ) : (
             <button
               type="button"
               onClick={() => setIsRecordingMode(true)}
-              style={{
-                background: 'rgba(255,255,255,0.05)',
-                border: '1px solid var(--glass-border)',
-                borderRadius: '50%',
-                width: '42px',
-                height: '42px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-                color: 'var(--text-muted)',
-                transition: 'all 0.2s ease'
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--text-main)'; e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
+              className="circle-btn"
               title="Record Voice Message"
             >
-              <FiMic style={{ fontSize: '1.15rem' }} />
+              <FiMic style={{ fontSize: '1.1rem' }} />
             </button>
           )}
         </form>

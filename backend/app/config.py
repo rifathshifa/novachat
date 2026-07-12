@@ -32,4 +32,9 @@ class Config:
     MAX_CONTENT_LENGTH = 25 * 1024 * 1024  # 25 MB max request size
     
     # CORS
-    CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:5173').split(',')
+    CORS_ALLOWED_ORIGINS = [
+        origin.strip() for origin in os.environ.get(
+            'CORS_ALLOWED_ORIGINS', 
+            'http://localhost:5173,http://127.0.0.1:5173,http://localhost:5176,http://127.0.0.1:5176'
+        ).split(',') if origin.strip()
+    ]

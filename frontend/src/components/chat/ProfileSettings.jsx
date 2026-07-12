@@ -1,7 +1,10 @@
 import React, { useState, useContext, useRef } from 'react';
 import { AuthContext } from '../../context/AuthContext';
 import GlassCard from '../common/GlassCard';
-import { FiCamera, FiX } from 'react-icons/fi';
+import { FiCamera, FiX, FiAlertCircle, FiCheckCircle } from 'react-icons/fi';
+
+// Media base URL (backend origin) — set VITE_UPLOADS_URL in .env
+const UPLOADS_URL = import.meta.env.VITE_UPLOADS_URL || 'http://localhost:5000';
 
 const ProfileSettings = ({ onClose }) => {
   const { user, updateProfile } = useContext(AuthContext);
@@ -60,89 +63,53 @@ const ProfileSettings = ({ onClose }) => {
   };
 
   const currentImage = previewImage ||
-    (user?.profile_image ? `http://localhost:5000${user.profile_image}` : null);
+    (user?.profile_image ? `${UPLOADS_URL}${user.profile_image}` : null);
 
   return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      background: 'rgba(0, 0, 0, 0.6)',
-      backdropFilter: 'blur(8px)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      zIndex: 500,
-    }}>
-      <GlassCard style={{ width: '100%', maxWidth: '420px', position: 'relative' }}>
+    <div className="modal-overlay-custom">
+      <GlassCard style={{ width: '100%', maxWidth: '420px', position: 'relative', padding: '40px 32px' }}>
         {/* Close Button */}
         <button
           onClick={onClose}
+          className="circle-btn"
           style={{
             position: 'absolute',
-            top: '15px',
-            right: '15px',
+            top: '20px',
+            right: '20px',
             background: 'none',
-            border: 'none',
-            color: 'var(--text-muted)',
-            cursor: 'pointer',
-            fontSize: '1.25rem'
+            border: 'none'
           }}
+          title="Close Settings"
         >
           <FiX />
         </button>
 
-        <h2 style={{ textAlign: 'center', marginBottom: '25px', fontSize: '1.4rem', fontWeight: 700 }}>
+        <h2 style={{ textAlign: 'center', marginBottom: '28px', fontSize: '1.6rem', fontWeight: 800, letterSpacing: '-0.5px' }}>
           Profile Settings
         </h2>
 
         {/* Avatar Section */}
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '25px' }}>
-          <div style={{ position: 'relative', cursor: 'pointer' }} onClick={() => fileRef.current?.click()}>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '28px' }}>
+          <div className="avatar-upload-trigger" onClick={() => fileRef.current?.click()} style={{ width: '96px', height: '96px', boxShadow: 'var(--shadow-md)' }}>
             {currentImage ? (
               <img
                 src={currentImage}
                 alt="Profile"
                 style={{
-                  width: '90px',
-                  height: '90px',
+                  width: '96px',
+                  height: '96px',
                   borderRadius: '50%',
                   objectFit: 'cover',
-                  border: '3px solid var(--accent-primary)',
+                  border: '3px solid var(--primary)',
                 }}
               />
             ) : (
-              <div style={{
-                width: '90px',
-                height: '90px',
-                borderRadius: '50%',
-                background: 'linear-gradient(135deg, var(--accent-primary) 0%, #00e5ff 100%)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontWeight: 'bold',
-                fontSize: '2rem',
-                color: '#fff',
-              }}>
+              <div className="avatar-initials" style={{ width: '96px', height: '96px', fontSize: '2rem' }}>
                 {user?.username?.substring(0, 2).toUpperCase()}
               </div>
             )}
-            <div style={{
-              position: 'absolute',
-              bottom: '0',
-              right: '0',
-              background: 'var(--accent-primary)',
-              borderRadius: '50%',
-              width: '28px',
-              height: '28px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              border: '2px solid #0d0d1e',
-            }}>
-              <FiCamera style={{ fontSize: '0.8rem', color: '#fff' }} />
+            <div className="avatar-upload-hover">
+              <FiCamera style={{ fontSize: '1.4rem' }} />
             </div>
           </div>
           <input
@@ -156,29 +123,39 @@ const ProfileSettings = ({ onClose }) => {
 
         {error && (
           <div style={{
-            background: 'rgba(255, 23, 68, 0.1)',
-            border: '1px solid var(--danger)',
-            color: '#ff8a80',
-            padding: '10px 14px',
-            borderRadius: '8px',
-            fontSize: '0.9rem',
-            marginBottom: '20px',
+            background: 'rgba(239, 68, 68, 0.08)',
+            border: '1px solid rgba(239, 68, 68, 0.2)',
+            color: 'var(--danger)',
+            padding: '12px 16px',
+            borderRadius: '12px',
+            fontSize: '0.875rem',
+            marginBottom: '24px',
+            lineHeight: '1.45',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
           }}>
-            {error}
+            <FiAlertCircle style={{ flexShrink: 0 }} />
+            <span>{error}</span>
           </div>
         )}
 
         {success && (
           <div style={{
-            background: 'rgba(0, 230, 118, 0.1)',
-            border: '1px solid var(--success)',
-            color: '#b9f6ca',
-            padding: '10px 14px',
-            borderRadius: '8px',
-            fontSize: '0.9rem',
-            marginBottom: '20px',
+            background: 'rgba(16, 185, 129, 0.08)',
+            border: '1px solid rgba(16, 185, 129, 0.2)',
+            color: 'var(--success)',
+            padding: '12px 16px',
+            borderRadius: '12px',
+            fontSize: '0.875rem',
+            marginBottom: '24px',
+            lineHeight: '1.45',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
           }}>
-            {success}
+            <FiCheckCircle style={{ flexShrink: 0 }} />
+            <span>{success}</span>
           </div>
         )}
 
@@ -191,11 +168,11 @@ const ProfileSettings = ({ onClose }) => {
               onChange={(e) => setBio(e.target.value)}
               placeholder="Tell others about yourself..."
               maxLength={256}
-              style={{ resize: 'vertical', minHeight: '70px' }}
+              style={{ resize: 'vertical', minHeight: '80px', borderRadius: '14px' }}
             />
           </div>
 
-          <div className="glass-input-group" style={{ marginBottom: '25px' }}>
+          <div className="glass-input-group" style={{ marginBottom: '32px' }}>
             <label className="glass-label">Custom Status</label>
             <input
               type="text"
@@ -204,10 +181,11 @@ const ProfileSettings = ({ onClose }) => {
               onChange={(e) => setCustomStatus(e.target.value)}
               placeholder="What are you up to?"
               maxLength={100}
+              style={{ borderRadius: '14px' }}
             />
           </div>
 
-          <button type="submit" className="glass-btn" style={{ width: '100%' }} disabled={loading}>
+          <button type="submit" className="glass-btn" style={{ width: '100%', height: '46px' }} disabled={loading}>
             {loading ? 'Saving...' : 'Save Profile'}
           </button>
         </form>

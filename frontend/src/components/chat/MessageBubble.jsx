@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { FiCheck, FiCornerUpLeft, FiEdit2, FiTrash2, FiMapPin, FiDownload, FiFileText } from 'react-icons/fi';
 import VoiceMessagePlayer from './VoiceMessagePlayer';
 
+// Media base URL (backend origin) — set VITE_UPLOADS_URL in .env
+const UPLOADS_URL = import.meta.env.VITE_UPLOADS_URL || 'http://localhost:5000';
+
 const MessageBubble = ({ message, isMe, onReply, onDelete, onEdit, onPin }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(message.content);
@@ -29,8 +32,14 @@ const MessageBubble = ({ message, isMe, onReply, onDelete, onEdit, onPin }) => {
   // Render Checkmark receipts
   const renderStatus = () => {
     if (!isMe || message.is_deleted) return null;
-    
-    if (message.status === 'read') {
+
+    if (message.status === 'sending') {
+      return (
+        <span style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }} title="Sending...">
+          ⏳
+        </span>
+      );
+    } else if (message.status === 'read') {
       return (
         <span style={{ display: 'flex', color: 'var(--accent-secondary)' }} title="Read">
           <FiCheck style={{ marginRight: '-6px' }} /><FiCheck />
@@ -54,41 +63,32 @@ const MessageBubble = ({ message, isMe, onReply, onDelete, onEdit, onPin }) => {
   // Render Attachment elements safely
   const renderAttachment = () => {
     if (message.is_deleted) return null;
-    
-    const backendUrl = 'http://localhost:5000';
-    const fileUrl = `${backendUrl}${message.content}`;
+
+    const fileUrl = message.content.startsWith('http')
+      ? message.content
+      : `${UPLOADS_URL}${message.content}`;
 
     switch (message.content_type) {
       case 'image':
         return (
-          <a href={fileUrl} target="_blank" rel="noopener noreferrer">
+          <a href={fileUrl} target="_blank" rel="noopener noreferrer" className="bubble-media-wrapper" style={{ display: 'block' }}>
             <img
               src={fileUrl}
               alt="Attachment"
-              style={{
-                maxWidth: '100%',
-                maxHeight: '200px',
-                borderRadius: '8px',
-                marginTop: '5px',
-                display: 'block',
-                cursor: 'pointer'
-              }}
+              className="bubble-media-image"
             />
           </a>
         );
       case 'video':
         return (
-          <video
-            src={fileUrl}
-            controls
-            style={{
-              maxWidth: '100%',
-              maxHeight: '200px',
-              borderRadius: '8px',
-              marginTop: '5px',
-              display: 'block'
-            }}
-          />
+          <div className="bubble-media-wrapper">
+            <video
+              src={fileUrl}
+              controls
+              className="bubble-media-image"
+              style={{ objectFit: 'contain' }}
+            />
+          </div>
         );
       case 'audio':
         return (
@@ -102,25 +102,13 @@ const MessageBubble = ({ message, isMe, onReply, onDelete, onEdit, onPin }) => {
             download
             target="_blank"
             rel="noopener noreferrer"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-              padding: '10px',
-              background: 'rgba(255,255,255,0.06)',
-              borderRadius: '8px',
-              color: 'var(--text-main)',
-              textDecoration: 'none',
-              marginTop: '5px',
-              fontSize: '0.9rem',
-              border: '1px solid rgba(255,255,255,0.05)'
-            }}
+            className="bubble-file-card"
           >
-            <FiFileText style={{ fontSize: '1.2rem', color: 'var(--accent-secondary)' }} />
-            <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            <FiFileText style={{ fontSize: '1.25rem', color: isMe ? '#ffffff' : 'var(--primary)', flexShrink: 0 }} />
+            <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: '0.85rem', fontWeight: 600 }}>
               {name.substring(32)} {/* Strip UUID prefix */}
             </span>
-            <FiDownload />
+            <FiDownload style={{ flexShrink: 0 }} />
           </a>
         );
       default:
@@ -130,114 +118,113 @@ const MessageBubble = ({ message, isMe, onReply, onDelete, onEdit, onPin }) => {
 
   return (
     <div
-      style={{
-        display: 'flex',
-        justifyContent: isMe ? 'flex-end' : 'flex-start',
-        marginBottom: '14px',
-        width: '100%',
-        position: 'relative'
-      }}
+      className={`message-wrapper ${isMe ? 'me' : 'them'}`}
       onMouseEnter={() => setShowMenu(true)}
       onMouseLeave={() => {
         setShowMenu(false);
         setIsEditing(false);
       }}
     >
-      <div
-        style={{
-          maxWidth: '65%',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: isMe ? 'flex-end' : 'flex-start',
-          gap: '4px'
-        }}
-      >
-        {/* Pinned label indicator */}
-        {message.is_pinned && !message.is_deleted && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', color: 'var(--accent-secondary)', marginBottom: '2px' }}>
-            <FiMapPin /> Pinned
-          </div>
-        )}
-
-        {/* Message Bubble Card */}
+      {/* Bubble column: pin label + bubble card */}
         <div
           style={{
-            background: isMe ? 'linear-gradient(135deg, var(--accent-primary) 0%, #6200ea 100%)' : 'rgba(255, 255, 255, 0.05)',
-            border: isMe ? 'none' : '1px solid var(--glass-border)',
-            padding: message.content_type === 'text' ? '10px 16px' : '6px',
-            borderRadius: isMe ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
-            color: 'var(--text-main)',
-            boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)',
-            position: 'relative'
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: isMe ? 'flex-end' : 'flex-start',
+            gap: '2px',
+            maxWidth: '420px',
+            minWidth: 0,
           }}
         >
-          {isEditing ? (
-            <form onSubmit={handleEditSubmit} style={{ display: 'flex', gap: '8px' }}>
-              <input
-                type="text"
-                className="glass-input"
-                value={editText}
-                onChange={(e) => setEditText(e.target.value)}
-                style={{ padding: '6px 10px', fontSize: '0.9rem', width: '200px' }}
-                autoFocus
-              />
-              <button type="submit" className="glass-btn" style={{ padding: '4px 10px', fontSize: '0.8rem' }}>
-                Save
-              </button>
-            </form>
-          ) : (
-            <>
-              {/* Text content or media attachment */}
-              {message.is_deleted || message.content_type === 'text' ? (
-                <p style={{
-                  fontSize: '0.95rem',
-                  lineHeight: '1.45',
-                  wordBreak: 'break-word',
-                  fontStyle: message.is_deleted ? 'italic' : 'normal',
-                  color: message.is_deleted ? 'var(--text-muted)' : 'var(--text-main)'
-                }}>
-                  {message.content}
-                </p>
-              ) : (
-                renderAttachment()
-              )}
-            </>
+          {/* Pinned label indicator */}
+          {message.is_pinned && !message.is_deleted && (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              fontSize: '0.72rem',
+              fontWeight: 600,
+              color: isMe ? 'var(--primary)' : 'var(--secondary)',
+              marginBottom: '1px',
+              padding: '0 4px'
+            }}>
+              <FiMapPin /> Pinned
+            </div>
           )}
 
-          {/* Time & Receipt status bar */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'flex-end',
-            gap: '5px',
-            marginTop: '4px',
-            fontSize: '0.72rem',
-            color: isMe ? 'rgba(255, 255, 255, 0.65)' : 'var(--text-muted)'
-          }}>
-            <span>{formatTime(message.created_at)}</span>
-            {renderStatus()}
+          {/* Message Bubble Card */}
+          <div className={`bubble-card ${isMe ? 'me' : 'them'}`}>
+            {isEditing ? (
+              <div style={{ padding: '8px 12px', display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <form onSubmit={handleEditSubmit} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <input
+                    type="text"
+                    className="glass-input"
+                    value={editText}
+                    onChange={(e) => setEditText(e.target.value)}
+                    style={{ padding: '6px 12px', fontSize: '0.875rem', width: '180px', borderRadius: '12px' }}
+                    autoFocus
+                  />
+                  <button type="submit" className="glass-btn">
+                    Save
+                  </button>
+                </form>
+              </div>
+            ) : (
+              <>
+                {/* Text content or media attachment */}
+                <div style={{ padding: message.content_type === 'text' ? '8px 12px 2px' : '6px 6px 2px' }}>
+                  {message.is_deleted || message.content_type === 'text' ? (
+                    <p
+                      className="bubble-text-content"
+                      style={{
+                        fontStyle: message.is_deleted ? 'italic' : 'normal',
+                        color: message.is_deleted
+                          ? (isMe ? 'rgba(255,255,255,0.55)' : 'var(--text-muted)')
+                          : (isMe ? '#ffffff' : 'var(--text-primary)'),
+                      }}
+                    >
+                      {message.content}
+                    </p>
+                  ) : (
+                    renderAttachment()
+                  )}
+                </div>
+              </>
+            )}
+
+            {/* Time & Receipt status bar — always on one horizontal line */}
+            <div style={{
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'flex-end',
+              gap: '3px',
+              padding: '0 10px 6px',
+              fontSize: '0.68rem',
+              fontWeight: 500,
+              color: isMe ? 'rgba(255, 255, 255, 0.65)' : 'var(--text-muted)',
+              lineHeight: 1,
+              whiteSpace: 'nowrap',
+              marginTop: '2px',
+            }}>
+              <span>{formatTime(message.created_at)}</span>
+              {renderStatus()}
+            </div>
           </div>
         </div>
-      </div>
 
       {/* Hover action menu overlay */}
       {showMenu && !message.is_deleted && (
-        <div style={{
-          position: 'absolute',
-          top: '-15px',
-          [isMe ? 'left' : 'right']: '-85px',
-          background: 'rgba(20, 20, 30, 0.95)',
-          border: '1px solid var(--glass-border)',
-          borderRadius: '20px',
-          padding: '4px 8px',
-          display: 'flex',
-          gap: '8px',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
-          zIndex: 10
-        }}>
+        <div
+          className="bubble-menu-overlay"
+          style={{
+            top: '-36px',
+            [isMe ? 'right' : 'left']: '0',
+          }}
+        >
           <button
             onClick={() => onReply(message)}
-            style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex' }}
             title="Reply"
           >
             <FiCornerUpLeft />
@@ -245,7 +232,7 @@ const MessageBubble = ({ message, isMe, onReply, onDelete, onEdit, onPin }) => {
           
           <button
             onClick={() => onPin(message.id, !message.is_pinned)}
-            style={{ background: 'none', border: 'none', color: message.is_pinned ? 'var(--accent-secondary)' : 'var(--text-muted)', cursor: 'pointer', display: 'flex' }}
+            style={{ color: message.is_pinned ? 'var(--primary)' : 'var(--text-muted)' }}
             title={message.is_pinned ? 'Unpin' : 'Pin'}
           >
             <FiMapPin />
@@ -254,7 +241,6 @@ const MessageBubble = ({ message, isMe, onReply, onDelete, onEdit, onPin }) => {
           {isMe && message.content_type === 'text' && (
             <button
               onClick={() => setIsEditing(true)}
-              style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex' }}
               title="Edit"
             >
               <FiEdit2 />
@@ -264,7 +250,7 @@ const MessageBubble = ({ message, isMe, onReply, onDelete, onEdit, onPin }) => {
           {isMe && (
             <button
               onClick={() => onDelete(message.id)}
-              style={{ background: 'none', border: 'none', color: 'var(--danger)', cursor: 'pointer', display: 'flex' }}
+              className="btn-danger-hover"
               title="Delete"
             >
               <FiTrash2 />

@@ -113,10 +113,10 @@ const VoiceMessagePlayer = ({ src, isMe }) => {
   };
 
   // Color configurations based on whether the message is sent by me or received
-  const playBtnBg = isMe ? 'rgba(255, 255, 255, 0.2)' : 'var(--accent-primary)';
+  const playBtnBg = isMe ? 'rgba(255, 255, 255, 0.25)' : 'var(--primary)';
   const playBtnColor = '#ffffff';
-  const activeWaveColor = isMe ? '#ffffff' : 'var(--accent-primary)';
-  const inactiveWaveColor = isMe ? 'rgba(255, 255, 255, 0.35)' : 'rgba(124, 110, 230, 0.2)';
+  const activeWaveColor = isMe ? '#ffffff' : 'var(--primary)';
+  const inactiveWaveColor = isMe ? 'rgba(255, 255, 255, 0.35)' : 'rgba(124, 58, 237, 0.15)';
   const textColor = isMe ? 'rgba(255, 255, 255, 0.85)' : 'var(--text-secondary)';
 
   const progress = duration > 0 ? currentTime / duration : 0;

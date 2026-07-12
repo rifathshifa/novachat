@@ -4,11 +4,11 @@ Covers: typing, message_send, message_read, message_edit,
         message_delete (for_me / for_everyone), message_pin,
         message_react.
 """
-from flask import session
+from flask import request
 from flask_socketio import emit
 from app.extensions import socketio, db
 from app.models import Message, User, BlockedUser, MessageReaction
-from app.sockets import connected_users
+from app.sockets import connected_users, get_user_id_from_sid
 import datetime
 
 
@@ -17,7 +17,7 @@ import datetime
 # ─────────────────────────────────────────────────────────
 @socketio.on('typing_start')
 def on_typing_start(data):
-    sender_id    = session.get('user_id')
+    sender_id    = get_user_id_from_sid(request.sid)
     recipient_id = data.get('recipient_id')
     if not sender_id or not recipient_id:
         return
@@ -28,7 +28,7 @@ def on_typing_start(data):
 
 @socketio.on('typing_stop')
 def on_typing_stop(data):
-    sender_id    = session.get('user_id')
+    sender_id    = get_user_id_from_sid(request.sid)
     recipient_id = data.get('recipient_id')
     if not sender_id or not recipient_id:
         return
@@ -40,7 +40,7 @@ def on_typing_stop(data):
 # ─────────────────────────────────────────────────────────
 @socketio.on('message_send')
 def on_message_send(data):
-    sender_id = session.get('user_id')
+    sender_id = get_user_id_from_sid(request.sid)
     if not sender_id:
         emit('message_error', {'error': 'Unauthorized session'})
         return
@@ -52,6 +52,8 @@ def on_message_send(data):
     file_url     = data.get('file_url')
     file_name    = data.get('file_name')
     file_size    = data.get('file_size')
+    # Client-side temp ID for deduplication
+    client_temp_id = data.get('client_temp_id')
 
     if not recipient_id:
         emit('message_error', {'error': 'recipient_id is required'})
@@ -95,9 +97,13 @@ def on_message_send(data):
 
         msg_dict = new_msg.to_dict(viewer_id=sender_id)
 
+        # Include the client temp id so the frontend can deduplicate
+        if client_temp_id:
+            msg_dict['client_temp_id'] = client_temp_id
+
         # Deliver to recipient
         socketio.emit('message_new', msg_dict, room=f'user_{recipient_id}')
-        # Confirm to all sender sessions
+        # Confirm to all sender sessions (replaces the optimistic message)
         socketio.emit('message_sent_confirm', msg_dict, room=f'user_{sender_id}')
 
     except Exception as e:
@@ -110,7 +116,7 @@ def on_message_send(data):
 # ─────────────────────────────────────────────────────────
 @socketio.on('message_read')
 def on_message_read(data):
-    current_user_id = session.get('user_id')
+    current_user_id = get_user_id_from_sid(request.sid)
     contact_id      = data.get('contact_id')
     if not current_user_id or not contact_id:
         return
@@ -148,7 +154,7 @@ def on_message_read(data):
 # ─────────────────────────────────────────────────────────
 @socketio.on('message_edit')
 def on_message_edit(data):
-    sender_id   = session.get('user_id')
+    sender_id   = get_user_id_from_sid(request.sid)
     message_id  = data.get('message_id')
     new_content = data.get('new_content', '').strip()
 
@@ -183,7 +189,7 @@ def on_message_edit(data):
 # ─────────────────────────────────────────────────────────
 @socketio.on('message_delete')
 def on_message_delete(data):
-    user_id    = session.get('user_id')
+    user_id    = get_user_id_from_sid(request.sid)
     message_id = data.get('message_id')
     scope      = data.get('scope', 'for_everyone')  # 'for_me' | 'for_everyone'
 
@@ -231,7 +237,7 @@ def on_message_delete(data):
 # ─────────────────────────────────────────────────────────
 @socketio.on('message_pin')
 def on_message_pin(data):
-    user_id    = session.get('user_id')
+    user_id    = get_user_id_from_sid(request.sid)
     message_id = data.get('message_id')
     is_pinned  = bool(data.get('is_pinned', False))
 
@@ -259,7 +265,7 @@ def on_message_pin(data):
 # ─────────────────────────────────────────────────────────
 @socketio.on('message_react')
 def on_message_react(data):
-    user_id    = session.get('user_id')
+    user_id    = get_user_id_from_sid(request.sid)
     message_id = data.get('message_id')
     emoji      = data.get('emoji', '').strip()
     action     = data.get('action', 'toggle')   # 'add' | 'remove' | 'toggle'
