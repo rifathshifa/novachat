@@ -1,10 +1,6 @@
 from dotenv import load_dotenv
 load_dotenv()
 
-from app import create_app, socketio
+from app import create_app
 
 app = create_app()
-
-if __name__ == '__main__':
-    # Runs the Flask-SocketIO development server
-    socketio.run(app, host='0.0.0.0', port=5000, debug=True, allow_unsafe_werkzeug=True)
