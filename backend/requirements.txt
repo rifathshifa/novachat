@@ -10,3 +10,4 @@ Pillow>=11.3.0
 itsdangerous==2.1.2
 eventlet==0.33.3
 psycopg2-binary>=2.9.9  # PostgreSQL adapter for Neon/cloud deployments
+gunicorn
