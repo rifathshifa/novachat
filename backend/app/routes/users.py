@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 from flask import Blueprint, request, jsonify, current_app, send_from_directory
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.extensions import db
@@ -187,3 +188,69 @@ def get_blocked_users():
             blocked_list.append(u.to_dict())
             
     return jsonify(blocked_list), 200
+
+
+@users_bp.route('/contacts', methods=['GET'])
+@jwt_required()
+def get_contacts():
+    """
+    Return users who have exchanged messages with the current user,
+    ordered by most recent message timestamp.
+    """
+    current_user_id = int(get_jwt_identity())
+    
+    # Find all distinct user IDs the current user has chatted with
+    from app.models import Message
+    
+    contact_ids = set()
+    
+    # Users who sent messages to current user
+    sent_to_me = db.session.query(Message.sender_id).filter(
+        Message.receiver_id == current_user_id,
+        Message.is_deleted == False
+    ).distinct().all()
+    
+    # Users who received messages from current user
+    i_sent_to = db.session.query(Message.receiver_id).filter(
+        Message.sender_id == current_user_id,
+        Message.is_deleted == False
+    ).distinct().all()
+    
+    for (uid,) in sent_to_me:
+        contact_ids.add(uid)
+    for (uid,) in i_sent_to:
+        contact_ids.add(uid)
+    
+    if not contact_ids:
+        return jsonify([]), 200
+    
+    # Fetch users and order by most recent message
+    from sqlalchemy import func, case
+    
+    # Get the latest message timestamp per contact
+    latest_per_contact = {}
+    for cid in contact_ids:
+        latest_msg = Message.query.filter(
+            ((Message.sender_id == current_user_id) & (Message.receiver_id == cid)) |
+            ((Message.sender_id == cid) & (Message.receiver_id == current_user_id)),
+            Message.is_deleted == False
+        ).order_by(Message.created_at.desc()).first()
+        
+        if latest_msg:
+            latest_per_contact[cid] = latest_msg.created_at
+    
+    # Sort contacts by most recent message
+    sorted_ids = sorted(contact_ids, key=lambda cid: latest_per_contact.get(cid, datetime.min), reverse=True)
+    
+    contacts = []
+    for cid in sorted_ids:
+        u = User.query.get(cid)
+        if u:
+            is_blocked = BlockedUser.query.filter_by(blocker_id=current_user_id, blocked_id=cid).first() is not None
+            is_blocked_by = BlockedUser.query.filter_by(blocker_id=cid, blocked_id=current_user_id).first() is not None
+            user_data = u.to_dict()
+            user_data['is_blocked'] = is_blocked
+            user_data['is_blocked_by'] = is_blocked_by
+            contacts.append(user_data)
+    
+    return jsonify(contacts), 200

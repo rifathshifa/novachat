@@ -6,7 +6,8 @@ import { getAccessToken } from '../services/api';
 export const SocketContext = createContext(null);
 
 // Backend Socket.IO URL — read from env at build time
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000';
+// Defaults to '' (same origin) for production. Set in .env for local dev.
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || '';
 
 export const SocketProvider = ({ children }) => {
   const { user } = useContext(AuthContext);

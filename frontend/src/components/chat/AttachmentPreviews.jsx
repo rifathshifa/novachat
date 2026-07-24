@@ -3,7 +3,8 @@ import { FiX, FiSend, FiCamera, FiVideo, FiFileText, FiSearch, FiVolume2, FiRota
 import api from '../../services/api';
 
 // Media base URL (backend origin) — set VITE_UPLOADS_URL in .env
-const UPLOADS_URL = import.meta.env.VITE_UPLOADS_URL || 'http://localhost:5000';
+// Defaults to '' (same origin) for production. Serves from Flask in production.
+const UPLOADS_URL = import.meta.env.VITE_UPLOADS_URL || '';
 
 // Helper to format bytes to human readable sizes
 const formatBytes = (bytes, decimals = 2) => {

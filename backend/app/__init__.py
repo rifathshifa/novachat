@@ -37,6 +37,17 @@ def create_app(config_class=Config):
         origin = flask_request.headers.get('Origin')
         allowed = app.config['CORS_ALLOWED_ORIGINS']
         
+        # Support wildcard '*' — echo back the request origin (safe with credentials)
+        if allowed == ['*'] or allowed == '*':
+            if origin:
+                response.headers['Access-Control-Allow-Origin'] = origin
+            else:
+                response.headers['Access-Control-Allow-Origin'] = '*'
+            response.headers['Access-Control-Allow-Credentials'] = 'true'
+            response.headers['Access-Control-Allow-Headers'] = 'Content-Type,Authorization'
+            response.headers['Access-Control-Allow-Methods'] = 'GET,POST,PUT,DELETE,OPTIONS'
+            return response
+
         is_allowed = False
         if origin:
             if origin in allowed:
@@ -87,7 +98,7 @@ def create_app(config_class=Config):
     socketio.init_app(
         app,
         cors_allowed_origins=socketio_origins,
-        async_mode='eventlet',       # eventlet is in requirements.txt
+        async_mode='threading',      # threading for dev (eventlet incompatible with Python 3.14)
         logger=False,
         engineio_logger=False,
     )
@@ -111,6 +122,29 @@ def create_app(config_class=Config):
     @app.route('/uploads/<filename>', methods=['GET'])
     def serve_upload(filename):
         return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
+    # ── Serve built frontend (production) ──
+    FRONTEND_DIST = os.path.join(os.path.dirname(os.path.dirname(__file__)), '..', 'frontend', 'dist')
+
+    @app.route('/assets/<path:filename>')
+    def serve_frontend_assets(filename):
+        assets_dir = os.path.join(FRONTEND_DIST, 'assets')
+        return send_from_directory(assets_dir, filename)
+
+    @app.route('/', defaults={'path': ''})
+    @app.route('/<path:path>')
+    def serve_frontend(path):
+        """SPA catch-all — serves index.html for all non-API paths."""
+        # Don't interfere with API and upload routes — return JSON 404
+        if path.startswith(('api/', 'uploads/')):
+            return jsonify({'error': 'Not found'}), 404
+        index_path = os.path.join(FRONTEND_DIST, 'index.html')
+        if os.path.exists(index_path):
+            return send_from_directory(FRONTEND_DIST, 'index.html')
+        return jsonify({
+            'error': 'Frontend not built. Run `cd frontend && npm run build` first.',
+            'hint': 'For development, run `npm run dev` in frontend/ separately.'
+        }), 200
 
     # ── Auto-create DB tables & uploads folder ──
     with app.app_context():

@@ -2,8 +2,9 @@ import axios from 'axios';
 
 // ── Base URLs from environment variables ──
 // Set VITE_API_URL in your .env file.
-// Default falls back to localhost for local dev if .env is missing.
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+// Defaults to '/api' (same-origin) which works in production when Flask
+// serves both frontend and API. Set to http://localhost:5000/api in .env for dev.
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,

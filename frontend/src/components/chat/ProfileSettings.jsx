@@ -4,7 +4,8 @@ import GlassCard from '../common/GlassCard';
 import { FiCamera, FiX, FiAlertCircle, FiCheckCircle } from 'react-icons/fi';
 
 // Media base URL (backend origin) — set VITE_UPLOADS_URL in .env
-const UPLOADS_URL = import.meta.env.VITE_UPLOADS_URL || 'http://localhost:5000';
+// Defaults to '' (same origin) for production. Serves from Flask in production.
+const UPLOADS_URL = import.meta.env.VITE_UPLOADS_URL || '';
 
 const ProfileSettings = ({ onClose }) => {
   const { user, updateProfile } = useContext(AuthContext);

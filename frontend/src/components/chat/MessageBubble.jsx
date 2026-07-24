@@ -3,7 +3,8 @@ import { FiCheck, FiCornerUpLeft, FiEdit2, FiTrash2, FiMapPin, FiDownload, FiFil
 import VoiceMessagePlayer from './VoiceMessagePlayer';
 
 // Media base URL (backend origin) — set VITE_UPLOADS_URL in .env
-const UPLOADS_URL = import.meta.env.VITE_UPLOADS_URL || 'http://localhost:5000';
+// Defaults to '' (same origin) for production. Serves from Flask in production.
+const UPLOADS_URL = import.meta.env.VITE_UPLOADS_URL || '';
 
 const MessageBubble = ({ message, isMe, onReply, onDelete, onEdit, onPin }) => {
   const [isEditing, setIsEditing] = useState(false);

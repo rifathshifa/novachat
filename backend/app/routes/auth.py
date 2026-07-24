@@ -118,7 +118,7 @@ def reset_password_request():
         serializer = get_serializer()
         token = serializer.dumps(email, salt='password-reset-salt')
         # In a real app this link would point to the frontend reset page
-        reset_link = f"http://localhost:5173/reset-password?token={token}"
+        reset_link = f"{current_app.config['FRONTEND_URL']}/reset-password?token={token}"
         send_password_reset_email(email, reset_link)
         
     return jsonify({'message': 'If the email exists, a password reset link has been sent.'}), 200

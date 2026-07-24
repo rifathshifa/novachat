@@ -27,6 +27,15 @@ class Config:
     JWT_REFRESH_COOKIE_NAME = 'refresh_token'
     JWT_REFRESH_COOKIE_PATH = '/api/auth/refresh'
     
+    # Connection Pool (used with PostgreSQL; ignored by SQLite)
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        'pool_pre_ping': True,
+        'pool_recycle': 300,
+    }
+    
+    # Frontend URL (for password reset links, etc.)
+    FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:5173')
+    
     # Upload Settings
     UPLOAD_FOLDER = os.environ.get('UPLOAD_FOLDER', os.path.join(BASE_DIR, 'uploads'))
     MAX_CONTENT_LENGTH = 25 * 1024 * 1024  # 25 MB max request size
