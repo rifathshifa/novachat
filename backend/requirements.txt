@@ -6,7 +6,7 @@ Flask-JWT-Extended==4.5.3
 Flask-Bcrypt==1.0.1
 Flask-CORS==4.0.0
 python-dotenv==1.0.0
-Pillow==10.0.0
+Pillow>=11.3.0
 itsdangerous==2.1.2
 eventlet==0.33.3
 psycopg2-binary>=2.9.9  # PostgreSQL adapter for Neon/cloud deployments
